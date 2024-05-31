@@ -132,7 +132,7 @@ private:
    TGLayoutHints      *fMenuBarLayout, *fMenuBarItemLayout, *fMenuBarHelpLayout;
 
       
-   TCanvas 			*c1;
+   
 	TPad *pad;
 		
 	

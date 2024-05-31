@@ -45,9 +45,9 @@ uint64_t StartTime;
 	DigitizerConfig_t   Dcfg;
 	CAEN_DGTZ_ErrorCode ret;
 	
-Double_t WF_XMIN, WF_XMAX, WF_YMIN, WF_YMAX;
+double WF_XMIN, WF_XMAX, WF_YMIN, WF_YMAX;
 Int_t PSD_BIN = 2;
-Double_t LBound, RBound;
+double LBound, RBound;
 	
 
 
@@ -65,6 +65,7 @@ using namespace std;
 	CAEN_DGTZ_DPP_PSD_Event_t   *Events[MAX_CH];  // events buffer
     CAEN_DGTZ_DPP_PSD_Waveforms_t   *Waveforms=NULL;         // waveforms buffer
 	TH1D *h_trace;
+	TCanvas *c1;
 	
 	
 	//uint32_t Nb=0;

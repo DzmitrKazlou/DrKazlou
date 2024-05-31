@@ -27,6 +27,9 @@ extern int handle;
 	extern CAEN_DGTZ_DPP_PSD_Event_t   *Events[MAX_CH];  // events buffer
 	extern CAEN_DGTZ_DPP_PSD_Waveforms_t   *Waveforms;         // waveforms buffer
 	//extern TH1D *h_trace;
+	extern double WF_XMIN, WF_XMAX, WF_YMIN, WF_YMAX;
+	
+	extern TCanvas *c1;
 	
 using namespace std;
 
@@ -568,6 +571,21 @@ int ParseConfigFile(FILE *f_ini, DigitizerConfig_t *Dcfg) // CAEN_DGTZ_DPP_PSD_P
 void set_loop(int val){loop = val; printf("Loop %i \n",loop);}
 
 ////
+
+void DrawHisto(TH1D *h_trace, double xmin, double xmax, double ymin, double ymax){
+	
+	
+	h_trace->Draw("HIST");
+	h_trace->GetYaxis()->SetRangeUser(ymin, ymax);
+	h_trace->GetYaxis()->SetTitleOffset(1.1);
+	h_trace->GetYaxis()->SetTitle(" Channels, lbs");
+	h_trace->GetXaxis()->SetRangeUser(xmin, xmax);
+	h_trace->GetXaxis()->SetTitle(" Time, ns");
+	
+	c1->Update( );
+}
+
+///
 void FillHisto(int ch,  TH1D *h_trace, double &ampl){ 
 	
 		
@@ -758,7 +776,8 @@ char CName[100];
 				
 		
 		//if (ElapsedTime>=(fNumericEntries[2]->GetNumber()*1000) && Nev!=0)//&& i==0 ) // sec*1000 = ms // DrawTime = fNumericEntries[6]->GetNumber()
-		//	DrawHisto( );	
+		if (ElapsedTime>=0.5*1000 && Nev!=0)	
+			DrawHisto(h_trace, 0, Dcfg.RecordLength[0],  WF_YMIN, WF_YMAX);	
 		
 		//if ( fPrint == true)
 		//	printf(" ---------------------------------------- \n");			

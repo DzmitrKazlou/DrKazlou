@@ -1,7 +1,7 @@
 #include "MTCOpt.h"
 #include "MTCFunc.h"
 
-extern Double_t WF_XMIN, WF_XMAX, WF_YMIN, WF_YMAX;
+extern double WF_XMIN, WF_XMAX, WF_YMIN, WF_YMAX;
 extern Double_t LBound, RBound;
 extern Int_t PSD_BIN;
 extern DigitizerConfig_t Dcfg;
