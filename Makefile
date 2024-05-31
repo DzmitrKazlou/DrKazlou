@@ -27,28 +27,41 @@ all: clean MTCRoot
 clean:
 		@rm -rf MTCRoot *.o *.cxx *.so
 
-guiDict.cxx : include/MTCRoot.h include/LinkDef.h
+guiDict.cxx : include/MTCRoot.h include/MTCFrame.h include/MTCLogic.h include/MTCParams.h include/MTCOpt.h include/LinkDef.h
 	@rootcling -f $@ $^
 	$(info [-10%]  Dictionary)	
 
 
-MTCRoot: MTCconfig.o  MTCFunc.o MTCRoot.o 
+MTCRoot: MTCRoot.o MTCFrame.o MTCLogic.o  MTCParams.o MTCOpt.o MTCFunc.o
 		$(info [70%]  Linking)
-		@$(CXX) -o MTCRoot src/MTCRoot.o guiDict.cxx src/MTCFunc.o  src/MTCconfig.o	 $(LIBS) -lCAENDigitizer -lCAENComm -lCAENVME `root-config --cflags --glibs` 
+		@$(CXX) -o MTCRoot src/MTCRoot.o src/MTCFrame.o src/MTCLogic.o src/MTCParams.o src/MTCOpt.o src/MTCFunc.o guiDict.cxx 	 $(LIBS)  -lCAENDigitizer -lCAENComm -lCAENVME `root-config --cflags --glibs` 
 		$(info [100%] Built target MTCRoot)
 		
-
-		
-MTCconfig.o:  src/MTCconfig.c
-		$(info [10%] Generating MTCconfig.o)
-		@$(CXX) -o src/MTCconfig.o -c src/MTCconfig.c
+#MTCconfig.o:  src/MTCconfig.c
+#		$(info [10%] Generating MTCconfig.o)
+#		@$(CXX) -o src/MTCconfig.o -c src/MTCconfig.c
 		
 MTCFunc.o:  src/MTCFunc.c
-		$(info [20%] Generating MTCFunc.o)
-		@$(CXX) -o src/MTCFunc.o -c src/MTCFunc.c		
+		$(info [9%] Generating MTCFunc.o)
+		@$(CXX) -o src/MTCFunc.o -c src/MTCFunc.c	-lCAENDigitizer -lCAENComm -lCAENVME	
+
+MTCOpt.o:  src/MTCOpt.c guiDict.cxx
+		$(info [10%] Generating MTCOpt.o)
+		@$(CXX) -o src/MTCOpt.o -c src/MTCOpt.c	 `root-config --cflags --glibs`			
+
+MTCLogic.o:  src/MTCLogic.c guiDict.cxx
+		$(info [20%] Generating MTCLogic.o)
+		@$(CXX) -o src/MTCLogic.o -c src/MTCLogic.c	 `root-config --cflags --glibs`			
 		
+MTCParams.o:  src/MTCParams.c guiDict.cxx
+		$(info [30%] Generating MTCParams.o)
+		@$(CXX) -o src/MTCParams.o -c src/MTCParams.c	 `root-config --cflags --glibs`					
+		
+MTCFrame.o:  src/MTCFrame.c guiDict.cxx
+		$(info [40%] Generating MTCFrame.o)
+		@$(CXX) -o src/MTCFrame.o -c src/MTCFrame.c	 `root-config --cflags --glibs`					
 		
 MTCRoot.o: src/MTCRoot.c guiDict.cxx
-		$(info [30%] Generation MTCRoot.o)
-		@$(CXX) -o src/MTCRoot.o -c src/MTCRoot.c -lCAENDigitizer -lCAENComm -lCAENVME`root-config --cflags --glibs`
+		$(info [50%] Generation MTCRoot.o)
+		@$(CXX) -o src/MTCRoot.o -c src/MTCRoot.c `root-config --cflags --glibs`
 		
