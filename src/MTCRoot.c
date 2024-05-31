@@ -36,7 +36,7 @@
 
 
 
-int N_CH = 10;
+int N_CH = 2;
 uint32_t log_val[2][8] = {};
 int handle = -1;
 int loop = -1; // Main readout loop flag
@@ -64,7 +64,7 @@ using namespace std;
 	char *buffer = NULL;
 	CAEN_DGTZ_DPP_PSD_Event_t   *Events[MAX_CH];  // events buffer
     CAEN_DGTZ_DPP_PSD_Waveforms_t   *Waveforms=NULL;         // waveforms buffer
-	
+	TH1D *h_trace;
 	
 	
 	//uint32_t Nb=0;
@@ -79,20 +79,19 @@ using namespace std;
 	//uint64_t StartTime, CurrentTime, PrevRateTime, ElapsedTime, time1, time2;
     
 		
-	TH1D *h_trace[MAX_CH];
-	TH1D *h_ampl[MAX_CH], *h_integral[MAX_CH];
-	TH1D *h_dt = new TH1D("hist_dt","hist dt", 400, -200, 200);
+	//TH1D *h_trace[MAX_CH];
+	//TH1D *h_ampl[MAX_CH], *h_integral[MAX_CH];
+	//TH1D *h_dt = new TH1D("hist_dt","hist dt", 400, -200, 200);
 	
 		
-	TH2D *h_psd_ampl = new TH2D("h_psd_ampl", "h_psd_ampl", 1000, 0, 20000, 1000, 0, 1);
-	TH2D *h_psd_int = new TH2D("h_psd_int", "h_psd_int", 1000, 0, 1000000, 1000, 0, 1);
-	TH2D *h_int_ampl = new TH2D("h_int_ampl", "h_int_ampl", 1000, 0, 20000, 1000, 0, 1000000);
-	TH2D *h_qs_ql = new TH2D("h_qs_ql", "h_qs_ql", 1000, 0, 500000, 1000, 0, 100000);
+	//TH2D *h_psd_ampl = new TH2D("h_psd_ampl", "h_psd_ampl", 1000, 0, 20000, 1000, 0, 1);
+	//TH2D *h_psd_int = new TH2D("h_psd_int", "h_psd_int", 1000, 0, 1000000, 1000, 0, 1);
+	//TH2D *h_int_ampl = new TH2D("h_int_ampl", "h_int_ampl", 1000, 0, 20000, 1000, 0, 1000000);
+	//TH2D *h_qs_ql = new TH2D("h_qs_ql", "h_qs_ql", 1000, 0, 500000, 1000, 0, 100000);
 	
 		
 		
-	TH2I *h_rubik = new TH2I("h_rubik", "h_rubik", 5, 5, 10, 5, 0, 5);
-	
+		
 	Int_t CH_2D = 0;
 	
 	TFile *ff;		
@@ -101,63 +100,6 @@ using namespace std;
 	uint32_t tst_out = 0;
 	
 	vector < vector <double>> v_out;
-
-
-
-int DeltaT(TH1D *hist[2]){
-	Double_t  min_val[2], min_bin[2];	
-
-	for (int i =0; i<2; i++){
-		min_val[i] = 5000;
-		min_bin[i] = 0;
-	
-		for (int bin = 1; bin<hist[i]->GetNbinsX(); bin++){
-			if (hist[i]->GetBinContent(bin)<min_val[i]){
-				min_bin[i] = bin;
-				min_val[i] = hist[i]->GetBinContent(bin);
-			}	
-			
-		}
-	}
-	
-	
-	
-	return (min_bin[1] - min_bin[0]) * b_width;
-}
-
-int DeltaTMath(TH1D *hist[2], Int_t TH1, Int_t TH2){
-	
-	Int_t p = -1; //POLARITY
-	Double_t  pre_val[2] = {0.0, 0.0}, thr_val[2] = {0.0, 0.0}, t_stamp[2] = {0.0, 0.0};	
-	Int_t thr_bin[2], thr[2] = {TH1, TH2};
-	
-	Double_t k, b;
-	
-	printf(" ---------------------------- \n");
-	
-	for (int i =0; i<2; i++){
-				
-		int bin =1;
-		while ( bin<hist[i]->GetNbinsX() &&  (p * hist[i]->GetBinContent(bin) ) < thr[i]){
-			
-			//printf(" thr[%i]  bin %i Ampl %f \n", i, bin, hist[i]->GetBinContent(bin));	
-			pre_val[i] = p * hist[i]->GetBinContent(bin-1);
-			thr_val[i] = p * hist[i]->GetBinContent(bin);
-			thr_bin[i]	= bin;
-			bin++;
-		}
-		//printf(" thr[%i]  bin %i Ampl %0.2f \n", i, bin, p * hist[i]->GetBinContent(bin));	
-		
-		k = ( thr_val[i] - pre_val[i] ) / b_width;
-		b = thr_val[i] - k * thr_bin[i] * b_width; 
-		t_stamp[i] = ( thr[i] - b ) / k;
-		//printf(" t_stamp[%i], %0.2f \n", i, t_stamp[i]);
-	}
-	//printf(" dt %0.2f \n", t_stamp[1] - t_stamp[0] );
-	
-	
-	return (t_stamp[1] - t_stamp[0]);
-}
 
 
 /*
@@ -649,12 +591,12 @@ int main(int argc, char **argv)
 	
 	LBound = 0, RBound = Dcfg.RecordLength[0] * b_width;
 	
-   
+   h_trace = new TH1D("h_trace", "h_trace", Dcfg.RecordLength[0], 0, Dcfg.RecordLength[0] * b_width);
    //GUI;
    handle = 0;
    new MainFrame(gClient->GetRoot(), 1800, 800);
    
-   ret = DataAcquisition(N_CH);
+   ret = DataAcquisition(N_CH, h_trace);
    
 
    theApp.Run();

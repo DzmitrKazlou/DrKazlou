@@ -4,7 +4,7 @@
 
 #include <../include/CAENDigitizerType.h>
 #include "CAENDigitizer.h"
-//#include "MTCconfig.h"
+#include "TH1D.h"
 
 #define MAX_CH 16 
 #define b_width 2 //2 ns bin width for 500MS/s V1730S
@@ -66,9 +66,12 @@ CAEN_DGTZ_ErrorCode SwitchOffLogic(int handle, int N_CH);
 
 int ParseConfigFile(FILE *f_ini, DigitizerConfig_t *Dcfg); // CAEN_DGTZ_DPP_PSD_Params_t *DPPParams);
 
-void ReadoutLoop(int handle, int N_CH);
 
-CAEN_DGTZ_ErrorCode DataAcquisition(int N_CH);
+void FillHisto(int ch, TH1D *h_trace, double &ampl);
+
+void ReadoutLoop(int handle, int N_CH, TH1D *h_trace);
+
+CAEN_DGTZ_ErrorCode DataAcquisition(int N_CH, TH1D *h_trace);
 
 
  

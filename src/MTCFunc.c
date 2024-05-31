@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 #include <../include/CAENDigitizerType.h>
 #include "CAENDigitizer.h"
 #include "MTCFunc.h"
@@ -8,9 +9,11 @@
 #include "TROOT.h"
 
 #include <TSystem.h>
+#include "TH1D.h"
+
 //#include "TROOT.h"
 //#include "TApplication.h"
-//#include "TCanvas.h"
+#include "TCanvas.h"
 
 #define CAEN_USE_DIGITIZERS
 //#define IGNORE_DPP_DEPRECATED
@@ -20,9 +23,12 @@ extern DigitizerConfig_t Dcfg;
 extern int loop;
 extern int handle;
 	extern char *buffer;
-	
+		
 	extern CAEN_DGTZ_DPP_PSD_Event_t   *Events[MAX_CH];  // events buffer
 	extern CAEN_DGTZ_DPP_PSD_Waveforms_t   *Waveforms;         // waveforms buffer
+	//extern TH1D *h_trace;
+	
+using namespace std;
 
 long get_time()
 {
@@ -34,7 +40,6 @@ long get_time()
 
     return time_ms;
 }
-
 
 
 
@@ -562,7 +567,68 @@ int ParseConfigFile(FILE *f_ini, DigitizerConfig_t *Dcfg) // CAEN_DGTZ_DPP_PSD_P
 
 void set_loop(int val){loop = val; printf("Loop %i \n",loop);}
 
-void ReadoutLoop(int handle, int N_CH ){	
+////
+void FillHisto(int ch,  TH1D *h_trace, double &ampl){ 
+	
+		
+	int BL_CUT = 20; //fNumericEntries[1]->GetNumber();
+	bool BL_flag  = true; //fC[0]->GetState() == kButtonDown ? true : false;
+	//CH_2D = fNumericEntries[3]->GetNumber();	
+	
+	Double_t BL_mean = 0,  integral = 0;
+	ampl = 0;
+	Int_t m_stamp;
+	Double_t psd_val =0, Qs = 0, Ql = 0;
+	
+	//Int_t PSD_BIN = 2;
+	//Int_t p = Dcfg.PulsePolarity[ch] == CAEN_DGTZ_PulsePolarityPositive ? 1: -1; //POLARITY
+	Int_t p = -1; // NEGATIVE
+	
+	vector <double> vec, vec_bl; 
+	uint16_t *WaveLine;
+	WaveLine = Waveforms->Trace1;
+		
+	h_trace->Reset("ICESM");	
+			
+		for (int j=0; j<(int)Waveforms->Ns; j++)
+			vec_bl.push_back((double)WaveLine[j]);
+	
+		for ( int j=0; j<BL_CUT; j++)
+			BL_mean = BL_mean + vec_bl[j];	
+		BL_mean /= BL_CUT;	
+		
+		
+		for ( int j=0; j<vec_bl.size( ); j++){
+			vec.push_back(vec_bl[j] - BL_mean);
+						
+			if (vec[j] * p > ampl){
+				ampl = vec[j] * p;
+				m_stamp = j;
+			}	
+			
+			//if (j * b_width > LBound && j * b_width < RBound)
+			//	integral += vec[j] * p;
+		}
+		
+		if (BL_flag == true){
+				for ( int j=0; j<vec.size( ); j++)
+					h_trace->Fill(j * b_width, vec[j]);
+			}
+			else{
+				for ( int j=0; j<vec_bl.size( ); j++)
+					h_trace->Fill(j * b_width, vec_bl[j]);
+			}	
+		
+		vec.clear();
+		vec_bl.clear();
+		//h_integral[ch]->Fill(integral);
+		//h_ampl[ch]->Fill(ampl);
+}
+
+/////
+////
+
+void ReadoutLoop(int handle, int N_CH, TH1D *h_trace ){	
 	CAEN_DGTZ_ErrorCode ret = CAEN_DGTZ_Success;	
 	
 	printf("ReadoutLoop activated \n");
@@ -672,9 +738,10 @@ char CName[100];
 					CAEN_DGTZ_DecodeDPPWaveforms(handle, (void**)&Events[ch][ev], Waveforms);
 					TrgCnt[ch]++;
 					
-					//Double_t a_val;
+					Double_t a_val;
 					//FillHisto(ch, a_val, Events[ch][ev].TimeTag); // all data performance
-					//printf(" FillHisto CH[%i] Ev[%i] Nev %i \n", ch, ev, Nev );			
+					FillHisto(ch, h_trace, a_val);
+					printf(" FillHisto CH[%i] Ev[%i] Nev %i ampl %f \n", ch, ev, Nev, a_val );			
 					//printf(" Print CH[%i] Ev[%i] Nev %i \n", ch, ev, Nev );			
 				   
 					
@@ -706,7 +773,7 @@ char CName[100];
 	//return ret;
 }
 
-CAEN_DGTZ_ErrorCode DataAcquisition(int N_CH){
+CAEN_DGTZ_ErrorCode DataAcquisition(int N_CH, TH1D *h_trace){
 	CAEN_DGTZ_ErrorCode ret = CAEN_DGTZ_Success;
 	
 		
@@ -720,7 +787,7 @@ CAEN_DGTZ_ErrorCode DataAcquisition(int N_CH){
 				//new TGMsgBox(gClient->GetRoot(), fMain, "Error", CName, kMBIconStop, kMBOk);
 				ret = QuitMain(handle, buffer, (void**)&Events, Waveforms);
 			}
-			ReadoutLoop(handle, N_CH);
+			ReadoutLoop(handle, N_CH, h_trace);
 		}
 		
 		if (loop == 0){

@@ -16,6 +16,7 @@ extern CAEN_DGTZ_ErrorCode ret;
 	
 	extern CAEN_DGTZ_DPP_PSD_Event_t   *Events[MAX_CH];  // events buffer
 	extern CAEN_DGTZ_DPP_PSD_Waveforms_t   *Waveforms;         // waveforms buffer
+	//extern TH1D *h_trace;
 
 
 MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h)
@@ -388,7 +389,8 @@ void MainFrame::InitButton()
 	fInitButton->SetState (kButtonDisabled);
 	fNumericEntries[0]->SetState(kFALSE);
 	
-	ret = DataAcquisition(N_CH);
+	//ret = DataAcquisition(N_CH);
+	
 }
 
 
