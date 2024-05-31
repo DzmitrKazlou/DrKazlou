@@ -578,7 +578,7 @@ char CName[100];
 			   
 	  // Calculate throughput and trigger rate (every second) 			
 			
-        	
+        	printf("In readout circle \n");
         	CurrentTime = get_time();
         	ElapsedTime = CurrentTime - PrevRateTime;
 
