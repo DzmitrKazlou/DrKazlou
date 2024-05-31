@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <../include/CAENDigitizerType.h>
 #include "CAENDigitizer.h"
-#include "MTCconfig.h"
+#include "MTCFunc.h"
 
 //#include "TROOT.h"
 //#include "TApplication.h"
@@ -12,10 +12,8 @@
 //#define IGNORE_DPP_DEPRECATED
 
 
-//static CAEN_DGTZ_IRQMode_t INTERRUPT_MODE = CAEN_DGTZ_IRQ_MODE_ROAK;
 
-/*
-static long get_time()
+long get_time()
 {
     long time_ms;
     struct timeval t1;
@@ -25,21 +23,7 @@ static long get_time()
 
     return time_ms;
 }
-*/
 
-/*
-static double linear_interp(double x0, double y0, double x1, double y1, double x) {
-    if (x1 - x0 == 0) {
-        fprintf(stderr, "Cannot interpolate values with same x.\n");
-        return HUGE_VAL;
-    }
-    else {
-        const double m = (y1 - y0) / (x1 - x0);
-        const double q = y1 - m * x1;
-        return m * x + q;
-    }
-}
-*/
 
 
 
@@ -179,11 +163,43 @@ CAEN_DGTZ_ErrorCode  WriteRegisterBitmask(int32_t handle, uint32_t address, uint
 	return ret;
 }
 
+CAEN_DGTZ_ErrorCode SetDPPParameters(int handle, DigitizerConfig_t Dcfg){
+	CAEN_DGTZ_ErrorCode ret = CAEN_DGTZ_Success;
+	
+	CAEN_DGTZ_DPP_PSD_Params_t DPPParams;
+	
+	 for(int i=0; i<Dcfg.Nch; i++) {
+		 DPPParams.thr[i] = Dcfg.thr[i];
+		 DPPParams.nsbl[i] = Dcfg.nsbl[i];
+		 DPPParams.pgate[i] = Dcfg.pgate[i];
+		 DPPParams.sgate[i] = Dcfg.sgate[i];
+		 DPPParams.lgate[i] = Dcfg.lgate[i];
+		 DPPParams.selft[i] = Dcfg.selft[i];
+		 DPPParams.trgc[i] = Dcfg.trgc[i];
+		 DPPParams.discr[i] = Dcfg.discr[i];
+		 DPPParams.cfdd[i] = Dcfg.cfdd[i];
+		 DPPParams.cfdf[i] = Dcfg.cfdf[i];
+		 DPPParams.tvaw[i] = Dcfg.tvaw[i];
+		 DPPParams.csens[i] = Dcfg.csens[i];
+	 }	 
+		DPPParams.purh = Dcfg.purh;
+		DPPParams.purgap = Dcfg.purgap;
+		DPPParams.blthr = Dcfg.blthr;
+		//DPPParams.bltmo = Dcfg.bltmo;
+		DPPParams.trgho = Dcfg.trgho;
+	
+    // Set the DPP specific parameters for the channels in the given channelMask
+    ret = CAEN_DGTZ_SetDPPParameters(handle, Dcfg.ChannelMask, &DPPParams);
+		
+	if (ret) {
+        printf("ERROR: can't set DPP Parameters.\n");
+        return ret;
+    }
+	
+	return ret;
+}	
 
-
-
-
-CAEN_DGTZ_ErrorCode ProgramDigitizer(int handle, DigitizerConfig_t Dcfg, CAEN_DGTZ_DPP_PSD_Params_t DPPParams) {
+CAEN_DGTZ_ErrorCode ProgramDigitizer(int handle, DigitizerConfig_t Dcfg){ 
     CAEN_DGTZ_ErrorCode ret = CAEN_DGTZ_Success;
 	
        /* Reset the digitizer */
@@ -195,12 +211,12 @@ CAEN_DGTZ_ErrorCode ProgramDigitizer(int handle, DigitizerConfig_t Dcfg, CAEN_DG
     }
 	
 	
-  /* Set the DPP acquisition mode
-    This setting affects the modes Mixed and List (see CAEN_DGTZ_DPP_AcqMode_t definition for details)
-    CAEN_DGTZ_DPP_SAVE_PARAM_EnergyOnly        Only charge (DPP-PSD/DPP-CI v2) is returned
-    CAEN_DGTZ_DPP_SAVE_PARAM_TimeOnly        Only time is returned
-    CAEN_DGTZ_DPP_SAVE_PARAM_EnergyAndTime    Both charge and time are returned
-    CAEN_DGTZ_DPP_SAVE_PARAM_None            No histogram data is returned */
+  // Set the DPP acquisition mode
+  //  This setting affects the modes Mixed and List (see CAEN_DGTZ_DPP_AcqMode_t definition for details)
+  // CAEN_DGTZ_DPP_SAVE_PARAM_EnergyOnly        Only charge (DPP-PSD/DPP-CI v2) is returned
+  //  CAEN_DGTZ_DPP_SAVE_PARAM_TimeOnly        Only time is returned
+  //  CAEN_DGTZ_DPP_SAVE_PARAM_EnergyAndTime    Both charge and time are returned
+  //  CAEN_DGTZ_DPP_SAVE_PARAM_None            No histogram data is returned 
     ret = CAEN_DGTZ_SetDPPAcquisitionMode(handle, Dcfg.AcqMode, CAEN_DGTZ_DPP_SAVE_PARAM_EnergyAndTime);
     
     // Set the digitizer acquisition mode (CAEN_DGTZ_SW_CONTROLLED or CAEN_DGTZ_S_IN_CONTROLLED)
@@ -209,14 +225,14 @@ CAEN_DGTZ_ErrorCode ProgramDigitizer(int handle, DigitizerConfig_t Dcfg, CAEN_DG
     // Set the I/O level (CAEN_DGTZ_IOLevel_NIM or CAEN_DGTZ_IOLevel_TTL)
     ret = CAEN_DGTZ_SetIOLevel(handle, Dcfg.IOlev);
 
-    /* Set the digitizer's behaviour when an external trigger arrives:
+    // Set the digitizer's behaviour when an external trigger arrives:
 
-    CAEN_DGTZ_TRGMODE_DISABLED: do nothing
-    CAEN_DGTZ_TRGMODE_EXTOUT_ONLY: generate the Trigger Output signal
-    CAEN_DGTZ_TRGMODE_ACQ_ONLY = generate acquisition trigger
-    CAEN_DGTZ_TRGMODE_ACQ_AND_EXTOUT = generate both Trigger Output and acquisition trigger
+    //CAEN_DGTZ_TRGMODE_DISABLED: do nothing
+    //CAEN_DGTZ_TRGMODE_EXTOUT_ONLY: generate the Trigger Output signal
+    //CAEN_DGTZ_TRGMODE_ACQ_ONLY = generate acquisition trigger
+    //CAEN_DGTZ_TRGMODE_ACQ_AND_EXTOUT = generate both Trigger Output and acquisition trigger
 
-    see CAENDigitizer user manual, chapter "Trigger configuration" for details */
+    //see CAENDigitizer user manual, chapter "Trigger configuration" for details 
     ret = CAEN_DGTZ_SetExtTriggerInputMode(handle, CAEN_DGTZ_TRGMODE_ACQ_ONLY);
 
     // Set the enabled channels
@@ -225,10 +241,32 @@ CAEN_DGTZ_ErrorCode ProgramDigitizer(int handle, DigitizerConfig_t Dcfg, CAEN_DG
     // Set how many events to accumulate in the board memory before being available for readout
     ret = CAEN_DGTZ_SetDPPEventAggregation(handle, Dcfg.EventAggr, 0);
     
-    /* Set the mode used to syncronize the acquisition between different boards.
-    In this example the sync is disabled */
+    // Set the mode used to syncronize the acquisition between different boards.
+    //In this example the sync is disabled 
     ret = CAEN_DGTZ_SetRunSynchronizationMode(handle, CAEN_DGTZ_RUN_SYNC_Disabled);
     
+	CAEN_DGTZ_DPP_PSD_Params_t DPPParams;
+	
+	 for(int i=0; i<Dcfg.Nch; i++) {
+		 DPPParams.thr[i] = Dcfg.thr[i];
+		 DPPParams.nsbl[i] = Dcfg.nsbl[i];
+		 DPPParams.pgate[i] = Dcfg.pgate[i];
+		 DPPParams.sgate[i] = Dcfg.sgate[i];
+		 DPPParams.lgate[i] = Dcfg.lgate[i];
+		 DPPParams.selft[i] = Dcfg.selft[i];
+		 DPPParams.trgc[i] = Dcfg.trgc[i];
+		 DPPParams.discr[i] = Dcfg.discr[i];
+		 DPPParams.cfdd[i] = Dcfg.cfdd[i];
+		 DPPParams.cfdf[i] = Dcfg.cfdf[i];
+		 DPPParams.tvaw[i] = Dcfg.tvaw[i];
+		 DPPParams.csens[i] = Dcfg.csens[i];
+	 }	 
+		DPPParams.purh = Dcfg.purh;
+		DPPParams.purgap = Dcfg.purgap;
+		DPPParams.blthr = Dcfg.blthr;
+		//DPPParams.bltmo = Dcfg.bltmo; // it occurs in DPPParams structure but didn't being used  in example for SetDPPParams()
+		DPPParams.trgho = Dcfg.trgho;
+	
     // Set the DPP specific parameters for the channels in the given channelMask
     ret = CAEN_DGTZ_SetDPPParameters(handle, Dcfg.ChannelMask, &DPPParams);
     
@@ -319,28 +357,6 @@ int32_t BoardSupportsTemperatureRead(CAEN_DGTZ_BoardInfo_t BoardInfo) {
 
 
 
-void calibrate(int handle,  CAEN_DGTZ_BoardInfo_t BoardInfo) {
-    printf("\n");
-    if (BoardSupportsCalibration(BoardInfo)) {
-        //if (WDrun->AcqRun == 0) {
-            int32_t ret = CAEN_DGTZ_Calibrate(handle);
-            if (ret == CAEN_DGTZ_Success) {
-                printf("ADC Calibration check: the board is calibrated.\n");
-            }
-            else {
-                printf("ADC Calibration failed. CAENDigitizer ERR %d\n", ret);
-            }
-            printf("\n");
-        //}
-        //else {
-        //   printf("Can't run ADC calibration while acquisition is running.\n");
-        //}
-    }
-    else {
-        printf("ADC Calibration not needed for this board family.\n");
-    }
-}
-
 CAEN_DGTZ_ErrorCode QuitMain(int handle, char* buffer, void **Events, CAEN_DGTZ_DPP_PSD_Waveforms_t *Waveforms){
 	CAEN_DGTZ_ErrorCode ret = CAEN_DGTZ_Success;
 	    ret = CAEN_DGTZ_FreeReadoutBuffer(&buffer);
@@ -349,4 +365,181 @@ CAEN_DGTZ_ErrorCode QuitMain(int handle, char* buffer, void **Events, CAEN_DGTZ_
 				
 		exit(0);
 		return ret;
+}
+
+
+void SetDefaultConfiguration(DigitizerConfig_t *Dcfg) { //CAEN_DGTZ_DPP_PSD_Params_t *DPPParams
+    
+    
+	Dcfg->EventAggr = 1; // 1023
+	Dcfg->ChannelMask = 0x3FF;
+	
+	
+	Dcfg->AcqMode = CAEN_DGTZ_DPP_ACQ_MODE_Mixed;
+	Dcfg->IOlev = CAEN_DGTZ_IOLevel_NIM;
+	
+	Dcfg->Nch = MAX_CH; // v1730
+	
+	for(int ch=0; ch<Dcfg->Nch; ch++) {
+		Dcfg->PulsePolarity[ch] = CAEN_DGTZ_PulsePolarityPositive; //Negative //Positive
+		Dcfg->RecordLength[ch] = 500;
+		Dcfg->PreTrigger[ch] = 50;
+		Dcfg->DCOffset[ch] = 0x199A; //10%
+		
+			// before were in CAEN_DGTZ_DPP_PSD_Params_t *DPPParams
+			//
+            Dcfg->thr[ch] = 100;        // Trigger Threshold
+            /* The following parameter is used to specifiy the number of samples for the baseline averaging:
+            0 -> absolute Bl
+            1 -> 16samp
+            2 -> 64samp
+            3 -> 256samp
+            4 -> 1024samp */
+            Dcfg->nsbl[ch] = 1;
+            Dcfg->lgate[ch] = 500;    // Long Gate Width (N*2ns for x730  and N*4ns for x725)
+            Dcfg->sgate[ch] = 124;    // Short Gate Width (N*2ns for x730  and N*4ns for x725)
+            Dcfg->pgate[ch] = 8;     // Pre Gate Width (N*2ns for x730  and N*4ns for x725) 
+            /* Self Trigger Mode:
+            0 -> Disabled
+            1 -> Enabled */
+            Dcfg->selft[ch] = 1;
+            // Trigger configuration:
+            //    CAEN_DGTZ_DPP_TriggerMode_Normal ->  Each channel can self-trigger independently from the other channels
+			//    CAEN_DGTZ_DPP_TriggerMode_Coincidence -> A validation signal must occur inside the shaped trigger coincidence window
+            //DPPParams->trgc[ch] = CAEN_DGTZ_DPP_TriggerMode_Normal;
+			
+			//DPPParams->trgc[ch] = CAEN_DGTZ_DPP_TriggerConfig_Peak;
+			Dcfg->trgc[ch] = CAEN_DGTZ_DPP_TriggerConfig_Threshold;
+
+			/*Discrimination mode for the event selection 
+			CAEN_DGTZ_DPP_DISCR_MODE_LED -> Leading Edge Distrimination
+			CAEN_DGTZ_DPP_DISCR_MODE_CFD -> Constant Fraction Distrimination*/
+			Dcfg->discr[ch] = CAEN_DGTZ_DPP_DISCR_MODE_LED;
+
+			/*CFD delay (N*2ns for x730  and N*4ns for x725)  */
+			Dcfg->cfdd[ch] = 4;  
+
+			/*CFD fraction: 0->25%; 1->50%; 2->75%; 3->100% */
+			Dcfg->cfdf[ch] = 0;
+
+            /* Trigger Validation Acquisition Window */
+            Dcfg->tvaw[ch] = 250;
+
+            /* Charge sensibility: 
+			Options for Input Range 2Vpp: 0->5fC/LSB; 1->20fC/LSB; 2->80fC/LSB; 3->320fC/LSB; 4->1.28pC/LSB; 5->5.12pC/LSB 
+			Options for Input Range 0.5Vpp: 0->1.25fC/LSB; 1->5fC/LSB; 2->20fC/LSB; 3->80fC/LSB; 4->320fC/LSB; 5->1.28pC/LSB */
+            Dcfg->csens[ch] = 0;
+        }
+        /* Pile-Up rejection Mode
+        CAEN_DGTZ_DPP_PSD_PUR_DetectOnly -> Only Detect Pile-Up
+        CAEN_DGTZ_DPP_PSD_PUR_Enabled -> Reject Pile-Up */
+        Dcfg->purh = CAEN_DGTZ_DPP_PSD_PUR_DetectOnly;
+        Dcfg->purgap = 100;  // Purity Gap in LSB units (1LSB = 0.12 mV for 2Vpp Input Range, 1LSB = 0.03 mV for 0.5 Vpp Input Range )
+        Dcfg->blthr = 3;     // Baseline Threshold
+        Dcfg->trgho = 8;     //8   // Trigger HoldOff
+    
+	
+}
+
+
+int ParseConfigFile(FILE *f_ini, DigitizerConfig_t *Dcfg) // CAEN_DGTZ_DPP_PSD_Params_t *DPPParams) 
+{
+	char str[1000], str1[1000], *pread = NULL;
+	int i, ch=-1, val, Off=0, tr = -1;
+    int ret = 0;
+	int RL_val, thr_val;
+     
+
+	// Default settings 
+	SetDefaultConfiguration(Dcfg);
+
+
+	// read config file and assign parameters 
+	while(!feof(f_ini)) {
+		int read;
+        char *res = NULL;
+        // read a word from the file
+        read = fscanf(f_ini, "%s", str);
+        if( !read || (read == EOF) || !strlen(str))
+			continue;
+        // skip comments
+        if(str[0] == '#') {
+            res = fgets(str, 1000, f_ini);
+			continue;
+        }
+
+        if (strcmp(str, "@ON")==0) {
+            Off = 0;
+            continue;
+        }
+		if (strcmp(str, "@OFF")==0)
+            Off = 1;
+        if (Off)
+            continue;
+
+       
+ 
+        // PID: Digitizer physical Identification number
+		if (strstr(str, "PID")!=NULL) {
+			read = fscanf(f_ini, "%d", &Dcfg->PID);
+			continue;
+		}
+		
+		
+        // Acquisition Record Length (number of samples)
+		if (strstr(str, "RECORD_LENGTH")!=NULL) {
+			read = fscanf(f_ini, "%d", &RL_val);
+			for (int ch=0; ch<Dcfg->Nch; ch++)	
+				Dcfg->RecordLength[ch] = RL_val;
+			continue;
+		}
+          
+
+        // EventAggr 
+		if (strstr(str, "EVENT_AGGR")!=NULL) {
+			read = fscanf(f_ini, "%d", &Dcfg->EventAggr);
+			continue;
+		}
+			
+	 ///Input polarity	
+	 
+		if (strstr(str, "PULSE_POLARITY")!=NULL) {
+			
+			read = fscanf(f_ini, "%s", str1);
+			if (strcmp(str1, "POSITIVE") == 0)
+				for (int ch=0; ch<Dcfg->Nch; ch++)
+					Dcfg->PulsePolarity[ch] = CAEN_DGTZ_PulsePolarityPositive;
+			else if (strcmp(str1, "NEGATIVE") == 0)
+				for (int ch=0; ch<Dcfg->Nch; ch++)		
+					Dcfg->PulsePolarity[ch] = CAEN_DGTZ_PulsePolarityNegative;
+			else
+				printf("%s: Invalid Parameter\n", str);
+
+						
+			continue;
+		}
+		
+		// Threshold
+		if (strstr(str, "TRIGGER_THRESHOLD")!=NULL) {
+			read = fscanf(f_ini, "%d", &thr_val);
+			for (int ch=0; ch<Dcfg->Nch; ch++)	
+				Dcfg->thr[ch] = thr_val;
+		}
+        // Front Panel LEMO I/O level (NIM, TTL)
+		
+		if (strstr(str, "IO_LEVEL")!=NULL) {
+			read = fscanf(f_ini, "%s", str1);
+			if (strcmp(str1, "TTL")==0)
+				Dcfg->IOlev = CAEN_DGTZ_IOLevel_TTL; //1;
+			if (strcmp(str1, "NIM")==0)
+				Dcfg->IOlev = CAEN_DGTZ_IOLevel_NIM;
+			//printf("%s: invalid option\n", str);
+			continue;
+		}
+		
+       
+	}
+	
+	
+	return ret;
 }
