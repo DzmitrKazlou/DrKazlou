@@ -651,10 +651,10 @@ int main(int argc, char **argv)
 	
    
    //GUI;
-   
+   handle = 0;
    new MainFrame(gClient->GetRoot(), 1800, 800);
    
-   //ret = DataAcquisition(handle, N_CH);
+   ret = DataAcquisition(N_CH);
    
 
    theApp.Run();

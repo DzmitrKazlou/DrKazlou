@@ -18,6 +18,7 @@
 extern uint64_t StartTime;
 extern DigitizerConfig_t Dcfg;
 extern int loop;
+extern int handle;
 	extern char *buffer;
 	
 	extern CAEN_DGTZ_DPP_PSD_Event_t   *Events[MAX_CH];  // events buffer
@@ -639,7 +640,7 @@ char CName[100];
 			ret = QuitMain(handle, buffer, (void**)&Events, Waveforms);
         }
 		
-		printf("BufferSize: %d\n", BufferSize);	
+		//printf("BufferSize: %d\n", BufferSize);	
         
 		
         if (BufferSize == 0) 
@@ -674,7 +675,7 @@ char CName[100];
 					//Double_t a_val;
 					//FillHisto(ch, a_val, Events[ch][ev].TimeTag); // all data performance
 					//printf(" FillHisto CH[%i] Ev[%i] Nev %i \n", ch, ev, Nev );			
-					printf(" Print CH[%i] Ev[%i] Nev %i \n", ch, ev, Nev );			
+					//printf(" Print CH[%i] Ev[%i] Nev %i \n", ch, ev, Nev );			
 				   
 					
 					gSystem->ProcessEvents(); 
@@ -693,7 +694,7 @@ char CName[100];
 		//	DrawHisto( );	
 		
 		//if ( fPrint == true)
-			printf(" ---------------------------------------- \n");			
+		//	printf(" ---------------------------------------- \n");			
 		
 		
 		gSystem->ProcessEvents(); 
@@ -705,7 +706,7 @@ char CName[100];
 	//return ret;
 }
 
-CAEN_DGTZ_ErrorCode DataAcquisition(int handle, int N_CH){
+CAEN_DGTZ_ErrorCode DataAcquisition(int N_CH){
 	CAEN_DGTZ_ErrorCode ret = CAEN_DGTZ_Success;
 	
 		
@@ -713,7 +714,7 @@ CAEN_DGTZ_ErrorCode DataAcquisition(int handle, int N_CH){
 		gSystem->ProcessEvents(); 
 		if (loop == 1){
 			ret = CAEN_DGTZ_SWStartAcquisition(handle);
-			printf("Start acquisition %i %i \n", ret, handle);
+			
 			if (ret) {
 				printf("ERR_START_ACQUISITION %i \n", ret);
 				//new TGMsgBox(gClient->GetRoot(), fMain, "Error", CName, kMBIconStop, kMBOk);

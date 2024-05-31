@@ -68,7 +68,7 @@ int ParseConfigFile(FILE *f_ini, DigitizerConfig_t *Dcfg); // CAEN_DGTZ_DPP_PSD_
 
 void ReadoutLoop(int handle, int N_CH);
 
-CAEN_DGTZ_ErrorCode DataAcquisition(int handle, int N_CH);
+CAEN_DGTZ_ErrorCode DataAcquisition(int N_CH);
 
 
  

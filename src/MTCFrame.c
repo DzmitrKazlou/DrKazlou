@@ -388,7 +388,7 @@ void MainFrame::InitButton()
 	fInitButton->SetState (kButtonDisabled);
 	fNumericEntries[0]->SetState(kFALSE);
 	
-	ret = DataAcquisition(handle, N_CH);
+	ret = DataAcquisition(N_CH);
 }
 
 
@@ -458,8 +458,7 @@ void MainFrame::StartButton()
 	
 	
 	//ret = CAEN_DGTZ_SWStartAcquisition(handle);
-	
-	//ReadoutLoop( );
+		
 }
 
 void MainFrame::StopButton()
