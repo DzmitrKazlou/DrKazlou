@@ -60,7 +60,7 @@ using namespace std;
 	bool fPrint = true; 
 	
 	int loop = 0; // Main readout loop flag
-	
+	uint64_t StartTime;
 	
    
 	//CAEN_DGTZ_EventInfo_t EventInfo;
@@ -70,12 +70,12 @@ using namespace std;
     CAEN_DGTZ_DPP_PSD_Waveforms_t   *Waveforms=NULL;         // waveforms buffer
 	
 	
-	int MajorNumber;
-	uint32_t Nb=0;
-	int TrgCnt[MAX_CH];
 	
-	char * EventPtr = NULL;
-	uint32_t AllocatedSize, BufferSize, NumEvents[MAX_CH];
+	//uint32_t Nb=0;
+	//int TrgCnt[MAX_CH];
+	
+	//char * EventPtr = NULL;
+	//uint32_t AllocatedSize, BufferSize, NumEvents[MAX_CH];
 	
 	//int DrawTime = 1000; //ms
 	
@@ -106,18 +106,7 @@ using namespace std;
 	
 	vector < vector <double>> v_out;
 
-/*
-static long get_time()
-{
-    long time_ms;
-    struct timeval t1;
-    struct timezone tz;
-    gettimeofday(&t1, &tz);
-    time_ms = (t1.tv_sec) * 1000 + t1.tv_usec / 1000;
 
-    return time_ms;
-}
-*/
 
 int DeltaT(TH1D *hist[2]){
 	Double_t  min_val[2], min_bin[2];	
@@ -667,6 +656,8 @@ int main(int argc, char **argv)
    
    //GUI;
    new MainFrame(gClient->GetRoot(), 1800, 800);
+   
+   ret = ReadoutLoop(handle, N_CH);
 
    theApp.Run();
 

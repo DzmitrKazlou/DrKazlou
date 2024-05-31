@@ -7,6 +7,8 @@
 extern int N_CH, CH_2D;
 extern uint32_t log_val[2][8];
 extern int handle;
+extern int loop;
+extern uint64_t StartTime;
 extern DigitizerConfig_t Dcfg;
 extern CAEN_DGTZ_ErrorCode ret;
 
@@ -321,8 +323,7 @@ void MainFrame::InitButton()
 	
 	handle = -1;
 	uint32_t AllocatedSize;
-	//new line
-	
+		
 	
 	ret = CAEN_DGTZ_OpenDigitizer(CAEN_DGTZ_USB_A4818_V2718, Dcfg.PID, 0, 0, &handle); //15103
 	
@@ -419,10 +420,10 @@ void MainFrame::ClearHisto()
 void MainFrame::StartButton()
 {	
  	printf("Start button \n");
-	uint64_t StartTime;
+	//uint64_t StartTime;
 	
 	StartTime = get_time( );
-	//printf("Start time %ld \n", StartTime);
+	printf("Start time %ld \n", StartTime);
 	
 	/*
 	//Store traces if choosen
@@ -438,20 +439,22 @@ void MainFrame::StartButton()
 		tree->Branch("Trace", &v_out);	 
 	}
 	
+	
 	for (int ch = 0; ch < N_CH; ch++){
 		if (h_trace[ch])
 			delete h_trace[ch];
 		
 		sprintf(CName, "h_trace%i", ch);
-		//h_trace[ch]= new TH1D(CName, CName, Dcfg.RecordLength[ch], 0, Dcfg.RecordLength[ch] * b_width);
-		h_trace[ch]= new TH1D(CName, CName, 500, 0, 500 * b_width);
+		h_trace[ch]= new TH1D(CName, CName, Dcfg.RecordLength[ch], 0, Dcfg.RecordLength[ch] * b_width);
+		
 		
 	}
-		
-	loop = 1;
 	*/
 	
-	//ret = CAEN_DGTZ_SWStartAcquisition(handle);
+	loop = 1;
+	
+	
+	ret = CAEN_DGTZ_SWStartAcquisition(handle);
 	
 	//ReadoutLoop( );
 }
@@ -460,10 +463,10 @@ void MainFrame::StopButton()
 {	
 	printf("Stop button \n");
 	
-	/*
-	loop = 0;
-	//ret = CAEN_DGTZ_SWStopAcquisition(handle);
 	
+	loop = 0;
+	ret = CAEN_DGTZ_SWStopAcquisition(handle);
+	/*
 	if (fSTCheck->GetState() == kButtonDown){
 		tree->Write();
 		ff->Write();

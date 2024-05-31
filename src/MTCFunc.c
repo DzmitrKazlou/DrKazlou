@@ -11,7 +11,13 @@
 #define CAEN_USE_DIGITIZERS
 //#define IGNORE_DPP_DEPRECATED
 
-
+extern uint64_t StartTime;
+extern DigitizerConfig_t Dcfg;
+extern int loop;
+	extern char *buffer;
+	
+	extern CAEN_DGTZ_DPP_PSD_Event_t   *Events[MAX_CH];  // events buffer
+	extern CAEN_DGTZ_DPP_PSD_Waveforms_t   *Waveforms;         // waveforms buffer
 
 long get_time()
 {
@@ -27,7 +33,7 @@ long get_time()
 
 
 
-CAEN_DGTZ_ErrorCode  SwitchOffLogic(int32_t handle, int N_CH) {
+CAEN_DGTZ_ErrorCode  SwitchOffLogic(int handle, int N_CH) {
     CAEN_DGTZ_ErrorCode ret = CAEN_DGTZ_Success;
 	
 uint32_t reg_data;
@@ -543,3 +549,152 @@ int ParseConfigFile(FILE *f_ini, DigitizerConfig_t *Dcfg) // CAEN_DGTZ_DPP_PSD_P
 	
 	return ret;
 }
+
+
+//////////////////////////////////////////////
+////READOUT FUNCTIONS
+/////////////////////////////////////////////
+
+
+CAEN_DGTZ_ErrorCode ReadoutLoop(int handle, int N_CH ){	
+	CAEN_DGTZ_ErrorCode ret = CAEN_DGTZ_Success;	
+	
+	printf("ReadoutLoop activated \n");
+uint32_t Nb=0;
+int TrgCnt[MAX_CH];
+	
+	//uint64_t StartTime, CurrentTime, PrevRateTime, ElapsedTime, time1, time2;
+	uint64_t CurrentTime, PrevRateTime, ElapsedTime;
+	uint32_t BufferSize, NumEvents[MAX_CH];	
+	
+char CName[100];
+	
+	PrevRateTime = get_time();
+	//double ampl[N_CH];
+	
+	
+	while(loop == 1) {
+		
+			   
+	  // Calculate throughput and trigger rate (every second) 			
+			
+        	
+        	CurrentTime = get_time();
+        	ElapsedTime = CurrentTime - PrevRateTime;
+
+        	
+        	//if (ElapsedTime > (fNumericEntries[3]->GetNumber()*1000)) { // 1000
+			if (ElapsedTime > 1000) { // 1000
+				sprintf(CName,"T: %li s",  (CurrentTime - StartTime) / 1000 );
+				printf("%s \n", CName);
+				//fTLabel->SetText(CName);
+				//gSystem->ProcessEvents(); 
+            	if (Nb != 0){
+					sprintf(CName,"Read. %.2f MB/s ", (float)Nb/((float)ElapsedTime*1048.576f) );
+					printf("%s \n", CName);
+					//fStatusBar->SetText(CName, 0);
+					
+					for (int ch=0; ch<N_CH; ch++) { //8
+						if (TrgCnt[ch] != 0){
+							sprintf(CName, "CH[%i]: %.2f Hz ", ch, (float)TrgCnt[ch]*1000.0f/(float)ElapsedTime);
+							printf("%s \n", CName);
+							//if (ch < 15)
+							//	fStatusBar->SetText(CName, ch+1);
+						}
+						else{
+							sprintf(CName, "No data...");
+							printf("%s \n", CName);
+							//if (ch < 15)
+							//	fStatusBar->SetText(CName, ch+1);
+						}
+						TrgCnt[ch] = 0;
+					}
+					printf("No data...\n");
+                	//if (ret == CAEN_DGTZ_Timeout) printf ("Timeout...\n"); else printf("No data...\n");
+				}
+									
+            	else{
+						printf("No data...\n");
+						//sprintf(CName, "No data...");
+						//fStatusBar->SetText(CName, 0);
+				}
+								
+            Nb = 0;
+            		
+            PrevRateTime = CurrentTime;
+			//gSystem->ProcessEvents(); 
+        	}
+		// Calculate throughput and trigger rate (every second) 
+	   
+		ret = CAEN_DGTZ_ReadData(handle,CAEN_DGTZ_SLAVE_TERMINATED_READOUT_MBLT, buffer, &BufferSize); // Read the buffer from the digitizer 
+		if (ret) {
+			printf("ERR_READ_DATA \n");
+			//sprintf(CName, "ERR_READ_DATA");
+			//new TGMsgBox(gClient->GetRoot(), fMain, "Error", CName, kMBIconStop, kMBOk);
+			ret = QuitMain(handle, buffer, (void**)&Events, Waveforms);
+        }
+		
+		//printf("BufferSize: %d\n", BufferSize);	
+        
+		
+        if (BufferSize == 0) 
+			continue;
+		
+		
+		
+		Nb += BufferSize;
+		
+		ret = CAEN_DGTZ_GetDPPEvents(handle, buffer, BufferSize, (void**)&Events, NumEvents);
+        if (ret) {
+            sprintf(CName, "GET_DPPEVENTS");
+			//new TGMsgBox(gClient->GetRoot(), fMain, "Error", CName, kMBIconStop, kMBOk);
+            ret = QuitMain(handle, buffer, (void**)&Events, Waveforms);
+        }
+        
+		//if ( fPrint == true)
+		//	printf(" ---------------------------------------- \n");			
+		
+		int Nev = 0;
+			
+		for (int ch=0; ch<N_CH; ch++) { 
+			//ampl[ch] = 0;
+			//h_trace[ch]->Reset("ICESM");
+			if (Dcfg.ChannelMask & (1<<ch) ){
+				Nev +=(int)NumEvents[ch];
+				for (uint32_t ev=0; ev<(int)NumEvents[ch]; ev++) {
+				
+					CAEN_DGTZ_DecodeDPPWaveforms(handle, (void**)&Events[ch][ev], Waveforms);
+					TrgCnt[ch]++;
+					
+					//Double_t a_val;
+					//FillHisto(ch, a_val, Events[ch][ev].TimeTag); // all data performance
+					//printf(" FillHisto CH[%i] Ev[%i] Nev %i \n", ch, ev, Nev );			
+					printf(" Print CH[%i] Ev[%i] Nev %i \n", ch, ev, Nev );			
+				   
+					
+					//gSystem->ProcessEvents(); 
+				} // events loop
+	
+
+
+	
+			} // check enabled channels
+			
+		}// channels loop
+		
+				
+		
+		//if (ElapsedTime>=(fNumericEntries[2]->GetNumber()*1000) && Nev!=0)//&& i==0 ) // sec*1000 = ms // DrawTime = fNumericEntries[6]->GetNumber()
+		//	DrawHisto( );	
+		
+		//if ( fPrint == true)
+			printf(" ---------------------------------------- \n");			
+		
+		
+		//gSystem->ProcessEvents(); 
+		
+    } // end of readout loop		
+				
+	return ret;
+}
+

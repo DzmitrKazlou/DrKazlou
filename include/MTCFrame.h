@@ -145,7 +145,7 @@ public:
 	const char *labelFont = "-Ubuntu-bold-r-*-*-14-*-*-*-*-*-iso8859-1";
 	const char *paramFont = "-adobe-courier-bold-r-*-*-15-*-*-*-*-*-iso8859-1";
 	
-	uint64_t StartTime, CurrentTime, PrevRateTime, ElapsedTime, time1, time2;
+	uint64_t StartTime;
 	//const int MAX_CH = 16;
 	
 	char CName[300];

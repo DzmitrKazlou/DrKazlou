@@ -64,6 +64,8 @@ CAEN_DGTZ_ErrorCode SwitchOffLogic(int handle, int N_CH);
 
 int ParseConfigFile(FILE *f_ini, DigitizerConfig_t *Dcfg); // CAEN_DGTZ_DPP_PSD_Params_t *DPPParams);
 
+CAEN_DGTZ_ErrorCode ReadoutLoop(int handle, int N_CH);
+
  
  
  
