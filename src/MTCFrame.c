@@ -321,6 +321,7 @@ void MainFrame::InitButton()
 	
 	handle = -1;
 	uint32_t AllocatedSize;
+	//new line
 	
 	
 	ret = CAEN_DGTZ_OpenDigitizer(CAEN_DGTZ_USB_A4818_V2718, Dcfg.PID, 0, 0, &handle); //15103
