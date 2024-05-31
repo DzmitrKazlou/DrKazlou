@@ -146,6 +146,7 @@ public:
 	const char *paramFont = "-adobe-courier-bold-r-*-*-15-*-*-*-*-*-iso8859-1";
 	
 	uint64_t StartTime;
+	int handle;
 	//const int MAX_CH = 16;
 	
 	char CName[300];

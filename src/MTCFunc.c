@@ -715,7 +715,7 @@ CAEN_DGTZ_ErrorCode DataAcquisition(int handle, int N_CH){
 			ret = CAEN_DGTZ_SWStartAcquisition(handle);
 			printf("Start acquisition %i %i \n", ret, handle);
 			if (ret) {
-				printf(CName, "ERR_START_ACQUISITION");
+				printf("ERR_START_ACQUISITION %i \n", ret);
 				//new TGMsgBox(gClient->GetRoot(), fMain, "Error", CName, kMBIconStop, kMBOk);
 				ret = QuitMain(handle, buffer, (void**)&Events, Waveforms);
 			}

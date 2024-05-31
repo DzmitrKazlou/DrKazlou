@@ -320,8 +320,7 @@ void MainFrame::DoSetVal(){
 
 void MainFrame::InitButton()
 {
-	
-	handle = -1;
+		
 	uint32_t AllocatedSize;
 	
 	/*	
@@ -389,7 +388,7 @@ void MainFrame::InitButton()
 	fInitButton->SetState (kButtonDisabled);
 	fNumericEntries[0]->SetState(kFALSE);
 	
-	
+	ret = DataAcquisition(handle, N_CH);
 }
 
 

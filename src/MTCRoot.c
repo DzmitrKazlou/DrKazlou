@@ -654,7 +654,7 @@ int main(int argc, char **argv)
    
    new MainFrame(gClient->GetRoot(), 1800, 800);
    
-   ret = DataAcquisition(handle, N_CH);
+   //ret = DataAcquisition(handle, N_CH);
    
 
    theApp.Run();
