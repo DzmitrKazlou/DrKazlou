@@ -334,7 +334,7 @@ void MainFrame::InitButton()
 	}
 	*/
 	
-	/*
+	
 	ret = CAEN_DGTZ_OpenDigitizer(CAEN_DGTZ_USB_A4818_V2718, Dcfg.PID, 0, 0, &handle); //15103
 	
 	
@@ -368,7 +368,7 @@ void MainFrame::InitButton()
         new TGMsgBox(gClient->GetRoot(), fMain, "Error", "Can't allocate memory buffers\n", kMBIconStop, kMBOk);
         ret = QuitMain(handle, buffer, (void**)&Events, Waveforms);
     }
-	*/
+	
 	
 	c1 = fEcanvas1->GetCanvas( );
 		
@@ -455,7 +455,12 @@ void MainFrame::StartButton()
 	*/
 	
 	loop = 1;
-		
+	
+	
+	
+	//ret = CAEN_DGTZ_SWStartAcquisition(handle);
+	
+	//ReadoutLoop( );
 }
 
 void MainFrame::StopButton()
