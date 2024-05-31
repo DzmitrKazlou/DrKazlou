@@ -385,7 +385,7 @@ void MainFrame::InitButton()
 			fCa[i]->SetState(kButtonDisabled);
 	}	
 	
-	printf("ChannelMask %i \n", Dcfg.ChannelMask);
+	printf("handle after init %i \n", handle);
 	fInitButton->SetState (kButtonDisabled);
 	fNumericEntries[0]->SetState(kFALSE);
 	

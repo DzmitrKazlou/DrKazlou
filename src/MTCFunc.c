@@ -639,7 +639,7 @@ char CName[100];
 			ret = QuitMain(handle, buffer, (void**)&Events, Waveforms);
         }
 		
-		//printf("BufferSize: %d\n", BufferSize);	
+		printf("BufferSize: %d\n", BufferSize);	
         
 		
         if (BufferSize == 0) 
@@ -713,7 +713,12 @@ CAEN_DGTZ_ErrorCode DataAcquisition(int handle, int N_CH){
 		gSystem->ProcessEvents(); 
 		if (loop == 1){
 			ret = CAEN_DGTZ_SWStartAcquisition(handle);
-			printf("Start acquisition %i \n", ret);
+			printf("Start acquisition %i %i \n", ret, handle);
+			if (ret) {
+				printf(CName, "ERR_START_ACQUISITION");
+				//new TGMsgBox(gClient->GetRoot(), fMain, "Error", CName, kMBIconStop, kMBOk);
+				ret = QuitMain(handle, buffer, (void**)&Events, Waveforms);
+			}
 			ReadoutLoop(handle, N_CH);
 		}
 		
