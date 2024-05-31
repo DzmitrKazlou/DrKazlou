@@ -323,23 +323,6 @@ void MainFrame::InitButton()
 	
 	handle = -1;
 	uint32_t AllocatedSize;
-		
-	
-	ret = CAEN_DGTZ_OpenDigitizer(CAEN_DGTZ_USB_A4818_V2718, Dcfg.PID, 0, 0, &handle); //15103
-	
-	
-    if(ret != CAEN_DGTZ_Success) {
-		sprintf(CName, "Can't open digitizer \n ret = %i", ret);
-		new TGMsgBox(gClient->GetRoot(), fMain, "Error", CName, kMBIconStop, kMBOk);
-		ret = QuitMain(handle, buffer, (void**)&Events, Waveforms);
-	}
-
-
-	//GetInfo 
-	CAEN_DGTZ_BoardInfo_t BoardInfo;
-	ret = CAEN_DGTZ_GetInfo(handle, &BoardInfo);
-	sprintf(CName, "Connected to CAEN Digitizer Model %s \n ROC FPGA Release is %s\n AMC FPGA Release is %s\n", BoardInfo.ModelName, BoardInfo.ROC_FirmwareRel, BoardInfo.AMC_FirmwareRel);
-	new TGMsgBox(gClient->GetRoot(), fMain, "Info", CName, kMBIconAsterisk, kMBOk);
 	
 	/*	
 	//Hist initialisation	
@@ -350,6 +333,24 @@ void MainFrame::InitButton()
 		h_integral[ch]= new TH1D(CName, CName, 100000, 0, 100000);
 	}
 	*/
+	
+	/*
+	ret = CAEN_DGTZ_OpenDigitizer(CAEN_DGTZ_USB_A4818_V2718, Dcfg.PID, 0, 0, &handle); //15103
+	
+	
+    if(ret != CAEN_DGTZ_Success) {
+		sprintf(CName, "Can't open digitizer \n ret = %i", ret);
+		new TGMsgBox(gClient->GetRoot(), fMain, "Error", CName, kMBIconStop, kMBOk);
+		ret = QuitMain(handle, buffer, (void**)&Events, Waveforms);
+	}
+
+		
+		//GetInfo 
+	CAEN_DGTZ_BoardInfo_t BoardInfo;
+	ret = CAEN_DGTZ_GetInfo(handle, &BoardInfo);
+	sprintf(CName, "Connected to CAEN Digitizer Model %s \n ROC FPGA Release is %s\n AMC FPGA Release is %s\n", BoardInfo.ModelName, BoardInfo.ROC_FirmwareRel, BoardInfo.AMC_FirmwareRel);
+	new TGMsgBox(gClient->GetRoot(), fMain, "Info", CName, kMBIconAsterisk, kMBOk);
+	
 	
 	ret = ProgramDigitizer(handle, Dcfg);
     if (ret) {
@@ -367,7 +368,7 @@ void MainFrame::InitButton()
         new TGMsgBox(gClient->GetRoot(), fMain, "Error", "Can't allocate memory buffers\n", kMBIconStop, kMBOk);
         ret = QuitMain(handle, buffer, (void**)&Events, Waveforms);
     }
-	
+	*/
 	
 	c1 = fEcanvas1->GetCanvas( );
 		
@@ -387,7 +388,8 @@ void MainFrame::InitButton()
 	printf("ChannelMask %i \n", Dcfg.ChannelMask);
 	fInitButton->SetState (kButtonDisabled);
 	fNumericEntries[0]->SetState(kFALSE);
-		
+	
+	
 }
 
 
@@ -453,11 +455,7 @@ void MainFrame::StartButton()
 	*/
 	
 	loop = 1;
-	
-	
-	ret = CAEN_DGTZ_SWStartAcquisition(handle);
-	
-	//ReadoutLoop( );
+		
 }
 
 void MainFrame::StopButton()
@@ -466,7 +464,8 @@ void MainFrame::StopButton()
 	
 	
 	loop = 0;
-	ret = CAEN_DGTZ_SWStopAcquisition(handle);
+	
+	//ret = CAEN_DGTZ_SWStopAcquisition(handle);
 	/*
 	if (fSTCheck->GetState() == kButtonDown){
 		tree->Write();

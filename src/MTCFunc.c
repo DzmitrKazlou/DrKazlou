@@ -4,6 +4,10 @@
 #include "CAENDigitizer.h"
 #include "MTCFunc.h"
 
+
+#include "TROOT.h"
+
+#include <TSystem.h>
 //#include "TROOT.h"
 //#include "TApplication.h"
 //#include "TCanvas.h"
@@ -555,8 +559,9 @@ int ParseConfigFile(FILE *f_ini, DigitizerConfig_t *Dcfg) // CAEN_DGTZ_DPP_PSD_P
 ////READOUT FUNCTIONS
 /////////////////////////////////////////////
 
+void set_loop(int val){loop = val; printf("Loop %i \n",loop);}
 
-CAEN_DGTZ_ErrorCode ReadoutLoop(int handle, int N_CH ){	
+void ReadoutLoop(int handle, int N_CH ){	
 	CAEN_DGTZ_ErrorCode ret = CAEN_DGTZ_Success;	
 	
 	printf("ReadoutLoop activated \n");
@@ -571,14 +576,12 @@ char CName[100];
 	
 	PrevRateTime = get_time();
 	//double ampl[N_CH];
-	
-	
+		
 	while(loop == 1) {
 		
 			   
 	  // Calculate throughput and trigger rate (every second) 			
-			
-        	printf("In readout circle \n");
+			        	
         	CurrentTime = get_time();
         	ElapsedTime = CurrentTime - PrevRateTime;
 
@@ -588,7 +591,7 @@ char CName[100];
 				sprintf(CName,"T: %li s",  (CurrentTime - StartTime) / 1000 );
 				printf("%s \n", CName);
 				//fTLabel->SetText(CName);
-				//gSystem->ProcessEvents(); 
+				gSystem->ProcessEvents(); 
             	if (Nb != 0){
 					sprintf(CName,"Read. %.2f MB/s ", (float)Nb/((float)ElapsedTime*1048.576f) );
 					printf("%s \n", CName);
@@ -622,9 +625,11 @@ char CName[100];
             Nb = 0;
             		
             PrevRateTime = CurrentTime;
-			//gSystem->ProcessEvents(); 
+			gSystem->ProcessEvents(); 
         	}
 		// Calculate throughput and trigger rate (every second) 
+		
+		
 	   
 		ret = CAEN_DGTZ_ReadData(handle,CAEN_DGTZ_SLAVE_TERMINATED_READOUT_MBLT, buffer, &BufferSize); // Read the buffer from the digitizer 
 		if (ret) {
@@ -672,7 +677,7 @@ char CName[100];
 					printf(" Print CH[%i] Ev[%i] Nev %i \n", ch, ev, Nev );			
 				   
 					
-					//gSystem->ProcessEvents(); 
+					gSystem->ProcessEvents(); 
 				} // events loop
 	
 
@@ -691,10 +696,32 @@ char CName[100];
 			printf(" ---------------------------------------- \n");			
 		
 		
-		//gSystem->ProcessEvents(); 
+		gSystem->ProcessEvents(); 
+		
+		
 		
     } // end of readout loop		
 				
-	return ret;
+	//return ret;
 }
 
+CAEN_DGTZ_ErrorCode DataAcquisition(int handle, int N_CH){
+	CAEN_DGTZ_ErrorCode ret = CAEN_DGTZ_Success;
+	
+		
+	while(1) {
+		gSystem->ProcessEvents(); 
+		if (loop == 1){
+			ret = CAEN_DGTZ_SWStartAcquisition(handle);
+			printf("Start acquisition %i \n", ret);
+			ReadoutLoop(handle, N_CH);
+		}
+		
+		if (loop == 0){
+			ret = CAEN_DGTZ_SWStopAcquisition(handle);
+			printf("Stop acquisition %i \n", ret);
+			loop = -1;
+		}
+	}
+	return ret;
+}

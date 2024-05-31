@@ -50,6 +50,8 @@ typedef struct
 
 long get_time();
 
+void set_loop(int val);
+
 CAEN_DGTZ_ErrorCode SwitchOffLogic(int handle, int N_CH);
 
  CAEN_DGTZ_ErrorCode SetLogic(int handle, uint32_t reg_val[2][8], int N_CH);
@@ -64,7 +66,10 @@ CAEN_DGTZ_ErrorCode SwitchOffLogic(int handle, int N_CH);
 
 int ParseConfigFile(FILE *f_ini, DigitizerConfig_t *Dcfg); // CAEN_DGTZ_DPP_PSD_Params_t *DPPParams);
 
-CAEN_DGTZ_ErrorCode ReadoutLoop(int handle, int N_CH);
+void ReadoutLoop(int handle, int N_CH);
+
+CAEN_DGTZ_ErrorCode DataAcquisition(int handle, int N_CH);
+
 
  
  

@@ -39,6 +39,17 @@
 int N_CH = 10;
 uint32_t log_val[2][8] = {};
 int handle = -1;
+int loop = -1; // Main readout loop flag
+uint64_t StartTime;
+
+	DigitizerConfig_t   Dcfg;
+	CAEN_DGTZ_ErrorCode ret;
+	
+Double_t WF_XMIN, WF_XMAX, WF_YMIN, WF_YMAX;
+Int_t PSD_BIN = 2;
+Double_t LBound, RBound;
+	
+
 
 using namespace std;
 
@@ -46,21 +57,6 @@ using namespace std;
 	Color_t color[16] = {kBlue, kRed, kViolet, kGreen+1, kPink-9, kOrange, kMagenta, kCyan-7, kGray, kBlack, kBlue, kRed, kGreen, kOrange-2, kBlack, kOrange+2}; 			
 	
 		
-	
-	Double_t WF_XMIN, WF_XMAX, WF_YMIN, WF_YMAX;
-	Int_t PSD_BIN = 2;
-	Double_t LBound, RBound;
-	
-	DigitizerConfig_t   Dcfg;
-		  
-	CAEN_DGTZ_ErrorCode ret;
-	
-	
-	bool fInit = false;
-	bool fPrint = true; 
-	
-	int loop = 0; // Main readout loop flag
-	uint64_t StartTime;
 	
    
 	//CAEN_DGTZ_EventInfo_t EventInfo;
@@ -655,9 +651,11 @@ int main(int argc, char **argv)
 	
    
    //GUI;
+   
    new MainFrame(gClient->GetRoot(), 1800, 800);
    
-   ret = ReadoutLoop(handle, N_CH);
+   ret = DataAcquisition(handle, N_CH);
+   
 
    theApp.Run();
 

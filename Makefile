@@ -43,7 +43,7 @@ MTCRoot: MTCRoot.o MTCFrame.o MTCLogic.o  MTCParams.o MTCOpt.o MTCFunc.o
 		
 MTCFunc.o:  src/MTCFunc.c
 		$(info [9%] Generating MTCFunc.o)
-		@$(CXX) -o src/MTCFunc.o -c src/MTCFunc.c	-lCAENDigitizer -lCAENComm -lCAENVME	
+		@$(CXX) -o src/MTCFunc.o -c src/MTCFunc.c	-lCAENDigitizer -lCAENComm -lCAENVME	`root-config --cflags --glibs`			 
 
 MTCOpt.o:  src/MTCOpt.c guiDict.cxx
 		$(info [10%] Generating MTCOpt.o)
