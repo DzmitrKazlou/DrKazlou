@@ -571,7 +571,7 @@ void InitReadoutConfig(ReadoutConfig_t *Rcfg, int N_CH){
 	
 	Rcfg->fPrint = false; // common print flag for debug
 	Rcfg->loop = -1; // ReadoutLoop flag
-	
+	Rcfg->DrawTime = 0.5; // time between histograms drawing in sec
 	for (int i = 0; i<N_CH; i++)
 		Rcfg->TrgCnt[i] = 0;
 	
@@ -588,7 +588,7 @@ void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH){
 	
 	for (int i=0; i<N_CH; i++){
 		sprintf(str,"h_trace%i", i);
-		Histo->trace[i] = new TH1D(str, str, RecordLength[i], 0, RecordLength[i]);
+		Histo->trace[i] = new TH1D(str, str, RecordLength[i], 0, RecordLength[i] * b_width);
 		sprintf(str, "h_ampl%i", i);
 		Histo->ampl[i]= new TH1D(str, str, 16384, 0, 16384);
 		sprintf(str, "h_integral%i", i);
@@ -601,6 +601,11 @@ void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH){
 ////
 
 void DrawHisto(Histograms_t Histo, int N_CH){
+	
+	c1->Divide(2, 2, 0.001, 0.001);
+	c1->Modified();
+	
+	c1->cd(1);
 	
 	for (int ch=0; ch<N_CH; ch++){
 		Histo.trace[ch]->SetLineColor(color[ch]);
@@ -615,6 +620,27 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 	else
 		Histo.trace[ch]->Draw("SAME HIST");
 	}
+	
+	c1->cd(2);
+		for (int ch=0; ch<N_CH; ch++){
+			Histo.ampl[ch]->SetLineColor(color[ch]);
+			if (ch	== 0)
+				Histo.ampl[ch]->Draw("HIST");
+			else
+				Histo.ampl[ch]->Draw("HIST SAME");	
+			
+		}	
+		
+	c1->cd(3);
+		for (int ch=0; ch<N_CH; ch++){
+			Histo.integral[ch]->SetLineColor(color[ch]);
+			if (ch	== 0)
+				Histo.integral[ch]->Draw("HIST");
+			else
+				Histo.integral[ch]->Draw("HIST SAME");	
+			
+		}		
+	
 	c1->Update( );
 }
 
@@ -809,7 +835,7 @@ char CName[100];
 				
 		
 		//if (ElapsedTime>=(fNumericEntries[2]->GetNumber()*1000) && Nev!=0)//&& i==0 ) // sec*1000 = ms // DrawTime = fNumericEntries[6]->GetNumber()
-		if (ElapsedTime>=0.5*1000 && Nev!=0)	
+		if (ElapsedTime>=Rcfg.DrawTime*1000 && Nev!=0)	
 			DrawHisto(*Histo, N_CH);	
 		
 		if (Rcfg.fPrint)

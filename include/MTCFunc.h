@@ -54,6 +54,7 @@ typedef struct
 	uint32_t Nb;
 	int TrgCnt[MAX_CH];
 	uint64_t StartTime;
+	double DrawTime;
 	
 } ReadoutConfig_t;
 

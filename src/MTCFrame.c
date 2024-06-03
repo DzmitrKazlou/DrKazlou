@@ -116,7 +116,7 @@ const char *numlabel[] = {
     };	
 	
 const Double_t numinit[] = {
-   10, 10, 0.5, 0
+   2, 10, 0.5, 0
 };	
 
 int iStyle[]	= {0, 0, 2, 0}; 	
