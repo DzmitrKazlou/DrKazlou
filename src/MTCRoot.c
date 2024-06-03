@@ -40,15 +40,16 @@ int N_CH = 2;
 uint32_t log_val[2][8] = {};
 int handle = -1;
 //int loop = -1; // Main readout loop flag
-uint64_t StartTime;
+//uint64_t StartTime;
 
 	DigitizerConfig_t   Dcfg;
 	ReadoutConfig_t   Rcfg;
 	CAEN_DGTZ_ErrorCode ret;
+	Histograms_t Histo;
 	
-double WF_XMIN, WF_XMAX, WF_YMIN, WF_YMAX;
-Int_t PSD_BIN = 2;
-double LBound, RBound;
+//double WF_XMIN, WF_XMAX, WF_YMIN, WF_YMAX;
+//Int_t PSD_BIN = 2;
+//double LBound, RBound;
 	
 
 
@@ -65,7 +66,7 @@ using namespace std;
 	char *buffer = NULL;
 	CAEN_DGTZ_DPP_PSD_Event_t   *Events[MAX_CH];  // events buffer
     CAEN_DGTZ_DPP_PSD_Waveforms_t   *Waveforms=NULL;         // waveforms buffer
-	TH1D *h_trace;
+	
 	TCanvas *c1;
 	
 	
@@ -572,6 +573,7 @@ int main(int argc, char **argv)
    
    memset(&Dcfg, 0, sizeof(Dcfg));
    memset(&Rcfg, 0, sizeof(Rcfg));
+   memset(&Histo, 0, sizeof(Histo));
 	
 	//Configuration file routine
 	
@@ -590,17 +592,12 @@ int main(int argc, char **argv)
 	//Configuration file routine
 	
 	InitReadoutConfig(&Rcfg, N_CH);	
-	WF_XMIN = 0, WF_XMAX = Dcfg.RecordLength[0] * b_width;
-	WF_YMIN = -500, WF_YMAX = 1000;
-	
-	LBound = 0, RBound = Dcfg.RecordLength[0] * b_width;
-	
-   h_trace = new TH1D("h_trace", "h_trace", Dcfg.RecordLength[0], 0, Dcfg.RecordLength[0] * b_width);
+		
    //GUI;
    handle = 0;
    new MainFrame(gClient->GetRoot(), 1800, 800);
    
-   ret = DataAcquisition(N_CH, h_trace);
+   ret = DataAcquisition(N_CH, &Histo);
    
 
    theApp.Run();

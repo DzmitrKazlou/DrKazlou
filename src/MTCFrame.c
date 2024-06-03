@@ -11,6 +11,7 @@ extern int handle;
 //extern uint64_t StartTime;
 extern DigitizerConfig_t Dcfg;
 extern ReadoutConfig_t Rcfg;
+extern Histograms_t Histo;
 extern CAEN_DGTZ_ErrorCode ret;
 
 	extern char *buffer;
@@ -303,13 +304,10 @@ void MainFrame::DoCheckBox(){
 			fSTTextEntry->SetEnabled(0);
 	}
    
-  	// To avoid simultaneous PSD and dT 
-	if (id >= 45 && id <= 46) {
-		for (int i = 4; i < 6; i++)
-			if (fC[i]->WidgetId() != id)
-				fC[i]->SetState(kButtonUp);
-	}	
-			
+   if (id > 40 ) 
+		Histo.fBL = fC[0]->GetState() == kButtonDown ? true : false; 
+	
+  				
 	
 }
 
@@ -317,7 +315,7 @@ void MainFrame::DoSetVal(){
 	
 	N_CH = fNumericEntries[0]->GetNumber();
 
-	
+	Histo.fBL = true; //fC[0]->GetState() == kButtonDown ? true : false;
 }
 
 
@@ -325,18 +323,7 @@ void MainFrame::InitButton()
 {
 		
 	uint32_t AllocatedSize;
-	
-	/*	
-	//Hist initialisation	
-	for (int ch = 0; ch < N_CH; ch++){ //
-		sprintf(CName, "h_ampl%i", ch);
-		h_ampl[ch]= new TH1D(CName, CName, 1000, 0, 32000);
-		sprintf(CName, "h_integral%i", ch);
-		h_integral[ch]= new TH1D(CName, CName, 100000, 0, 100000);
-	}
-	*/
-	
-	
+		
 	ret = CAEN_DGTZ_OpenDigitizer(CAEN_DGTZ_USB_A4818_V2718, Dcfg.PID, 0, 0, &handle); //15103
 	
 	
@@ -391,7 +378,10 @@ void MainFrame::InitButton()
 	fInitButton->SetState (kButtonDisabled);
 	fNumericEntries[0]->SetState(kFALSE);
 	
-	//ret = DataAcquisition(N_CH);
+	//
+	
+   InitHisto(&Histo, Dcfg.RecordLength, N_CH);
+		
 	
 }
 
@@ -399,6 +389,10 @@ void MainFrame::InitButton()
 
 void MainFrame::ClearHisto()
 {
+	for (int ch = 0; ch < N_CH; ch++){		
+		Histo.ampl[ch]->Reset("ICESM");
+		Histo.integral[ch]->Reset("ICESM");
+	}
 /*
 	for (int ch = 0; ch < N_CH; ch++){		 //(int)BoardInfo.Channels
 		h_ampl[ch]->Reset("ICESM");

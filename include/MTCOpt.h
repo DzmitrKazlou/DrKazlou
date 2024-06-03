@@ -61,15 +61,15 @@ RQ_OBJECT("OptMenu")
 private:
    TGTransientFrame     *fMain;
    TGCompositeFrame     *f1, *f2, *f3;
-   TGCheckButton *fC[2];	
+   TGVerticalFrame  *fVF[2];
+   TGCheckButton *fC[5];	
    TGTextButton      *fCloseButton;
    
 	
-   TGGroupFrame *fGF[4];	
+	TGGroupFrame *fGF[4];	
 	TGHorizontalFrame    *fF[4][2];
-   TGLabel              *fLabel[4][4];
-   //TGNumberEntry        *fNumericEntries[4][4];
-   TGNumberEntry        *fNumericEntriesOpt[4][4];
+	TGLabel              *fLabel[4][4];
+    TGNumberEntry        *fNumericEntriesOpt[4][4];
 	
    	
 

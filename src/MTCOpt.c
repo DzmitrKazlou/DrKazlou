@@ -1,10 +1,10 @@
 #include "MTCOpt.h"
 #include "MTCFunc.h"
 
-extern double WF_XMIN, WF_XMAX, WF_YMIN, WF_YMAX;
-extern Double_t LBound, RBound;
-extern Int_t PSD_BIN;
+
 extern DigitizerConfig_t Dcfg;
+extern Histograms_t Histo;
+extern ReadoutConfig_t Rcfg;
 
 OptMenu::OptMenu(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h, UInt_t options)
 {
@@ -22,16 +22,16 @@ OptMenu::OptMenu(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h, UI
 
    f1 = new TGCompositeFrame(fMain, 300, 200, kVerticalFrame); //| kFixedWidth
 	
-	const char *titlelabel[] = {"Amplitude", "Integral", "PSD", "Waveforms"};		
+	const char *titlelabel[] = {"Amplitude range search [ns]", "Integral range calc. [ns]", "PSD", "Waveforms"};		
 	
-	const char *numlabel[3][2] = { {"Xmin","Xmax"}, {"LBound","RBound"}, {"PSD_BIN", " $ " }  };	
+	const char *numlabel[3][2] = { {"LBound","RBound"}, {"LBound","RBound"}, {"PSD_BIN", " $ " }  };	
 	const char *numlabel2[] = { "Xmin","Xmax","Ymin", "Ymax" };	
 	
-	const Double_t numinit[4][4] = {
-		{0, (Double_t)Dcfg.RecordLength[0] * b_width, 2, 3},
-		{0, (Double_t)Dcfg.RecordLength[0] * b_width, 2, 3},
+	const Int_t numinit[4][4] = {
+		{Histo.ALBound, Histo.ARBound, 2, 3},
+		{Histo.ILBound, Histo.IRBound, 2, 3},
 		{2, 500, -1000, 50},
-		{WF_XMIN, WF_XMAX, WF_YMIN, WF_YMAX}  
+		{Histo.WF_XMIN, Histo.WF_XMAX, Histo.WF_YMIN, Histo.WF_YMAX}  
 		
 	};	
 
@@ -88,26 +88,37 @@ OptMenu::OptMenu(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h, UI
 		fGF[i]->Resize();	
 	}
 	
-	fC[0] = new TGCheckButton(f1, new TGHotString("OptStat"), 10);	
-	fC[1] = new TGCheckButton(f1, new TGHotString("OptFit"), 11);	
+	const char *opt_label[] = { "OptStat","OptFit","Print", "TH2D AP", "TH2D COLZ" };	
 	
-	for (int i=0; i<2; i++){
+	TGHorizontalFrame *fHFOpt = new TGHorizontalFrame(f1, 200, 60);
+	
+	fVF[0] = new TGVerticalFrame(fHFOpt, 40, 30);
+	fVF[1] = new TGVerticalFrame(fHFOpt, 40, 30);
+	
+	for (int i=0; i<5; i++){
+		if (i<3){
+			fC[i] = new TGCheckButton(fVF[0], new TGHotString(opt_label[i]), 10 + i);	
+			fVF[0]->AddFrame(fC[i], new TGLayoutHints(kLHintsTop | kLHintsLeft, 2, 2, 2, 2) ); //(kLHintsTop | kLHintsExpandX, 2, 2, 3, 0)
+		}	
+		else{
+			fC[i] = new TGCheckButton(fVF[1], new TGHotString(opt_label[i]), 10 + i);	
+			fVF[1]->AddFrame(fC[i], new TGLayoutHints(kLHintsTop | kLHintsLeft, 2, 2, 2, 2) ); //(kLHintsTop | kLHintsExpandX, 2, 2, 3, 0)
+		}	
 		fC[i]->Connect("Clicked()", "OptMenu", this, "DoCheckBox()");
-		f1->AddFrame(fC[i], new TGLayoutHints(kLHintsTop | kLHintsLeft, 10, 2, 10, 2) ); //(kLHintsTop | kLHintsExpandX, 2, 2, 3, 0)
 	}
-
-	fCloseButton = new TGTextButton(f1, "&Ok", 2);
-	fCloseButton->SetFont(sFont);
-	fCloseButton->Resize(60, 30);
-	fCloseButton->Connect("Clicked()", "OptMenu", this, "DoClose()");
-
-   
-
+		
+	fC[3]->SetState(kButtonDown);
 	
-	f1->AddFrame(fCloseButton, new TGLayoutHints(kLHintsTop | kLHintsCenterX, 10, 10, 3, 3) ); //(kLHintsTop | kLHintsExpandX, 2, 2, 3, 0)
+	fVF[0]->Resize( );
+	fVF[1]->Resize( );
+	fHFOpt->AddFrame(fVF[0], new TGLayoutHints(kLHintsTop | kLHintsLeft, 2, 2, 2, 2) ); //(kLHintsTop | kLHintsExpandX, 2, 2, 3, 0)
+	fHFOpt->AddFrame(fVF[1], new TGLayoutHints(kLHintsTop | kLHintsRight, 2, 2, 2, 2) ); //(kLHintsTop | kLHintsExpandX, 2, 2, 3, 0)
+	
+	f1->AddFrame(fHFOpt, new TGLayoutHints(kLHintsTop | kLHintsLeft, 2, 2, 2, 2) ); //(kLHintsTop | kLHintsExpandX, 2, 2, 3, 0)
+	
 	f1->Resize();
 
-	fMain->AddFrame(f1, new TGLayoutHints(kLHintsTop | kLHintsRight, 2, 5, 10, 0) );
+	fMain->AddFrame(f1, new TGLayoutHints(kLHintsTop | kLHintsRight, 2, 5, 5, 0) );
 
   
 
@@ -150,15 +161,16 @@ void OptMenu::DoClose()
 
 void OptMenu::DoSetVal()
 {
+	Histo.ALBound = fNumericEntriesOpt[0][0]->GetNumber();
+	Histo.ARBound = fNumericEntriesOpt[0][1]->GetNumber();
+	Histo.ILBound = fNumericEntriesOpt[1][0]->GetNumber();
+	Histo.IRBound = fNumericEntriesOpt[1][1]->GetNumber();
+    Histo.PSD_BIN = fNumericEntriesOpt[2][0]->GetNumber();	
 	
-	LBound = fNumericEntriesOpt[1][0]->GetNumber();
-	RBound = fNumericEntriesOpt[1][1]->GetNumber();
-    PSD_BIN = fNumericEntriesOpt[2][0]->GetNumber();	
-	
-	WF_XMIN = fNumericEntriesOpt[3][0]->GetNumber();	
-	WF_XMAX = fNumericEntriesOpt[3][1]->GetNumber();
-	WF_YMIN = fNumericEntriesOpt[3][2]->GetNumber();	
-	WF_YMAX = fNumericEntriesOpt[3][3]->GetNumber();
+	Histo.WF_XMIN = fNumericEntriesOpt[3][0]->GetNumber();	
+	Histo.WF_XMAX = fNumericEntriesOpt[3][1]->GetNumber();
+	Histo.WF_YMIN = fNumericEntriesOpt[3][2]->GetNumber();	
+	Histo.WF_YMAX = fNumericEntriesOpt[3][3]->GetNumber();
 	
    
 }
@@ -168,20 +180,38 @@ void OptMenu::DoCheckBox(){
 	TGButton *btn = (TGButton *) gTQSender;
 	Int_t id = btn->WidgetId();
 	
-	//Store traces checkbox
-	if (id == 10 ) {
-		if (fC[0]->GetState() == kButtonDown)
-			gStyle->SetOptStat(1111);
-		else
-			gStyle->SetOptStat(0);
-	}
-   
-  	// To avoid simultaneous PSD and dT 
-	if (id == 11) {
-		if (fC[1]->GetState() == kButtonDown)
-			gStyle->SetOptFit(1111);
-		else
-			gStyle->SetOptFit(0);
+	//OptStat
+	if (id == 10 ) 
+		fC[0]->GetState() == kButtonDown ? gStyle->SetOptStat(1111) : gStyle->SetOptStat(0);
+	
+	//OptFit     	
+	if (id == 11) 
+		fC[1]->GetState() == kButtonDown ? gStyle->SetOptFit(1111) : gStyle->SetOptFit(0);
+	
+	//fPrint	
+	if (id == 12) 
+		fC[2]->GetState() == kButtonDown ? Rcfg.fPrint = true : Rcfg.fPrint = false;
+		
+	if (id == 13) { // DrawOption  with marker
+		if (fC[3]->GetState() == kButtonDown){
+			sprintf(Histo.h2Style, "%s", "");
+			fC[4]->SetState(kButtonUp);
+		}	
+		else{
+			fC[4]->SetState(kButtonDown);
+			sprintf(Histo.h2Style, "COLZ");
+		}	
+	}	
+	
+	if (id == 14) { // DrawOption  COLZ
+		if (fC[4]->GetState() == kButtonDown){
+			sprintf(Histo.h2Style, "COLZ");
+			fC[3]->SetState(kButtonUp);
+		}	
+		else{
+			fC[3]->SetState(kButtonDown);
+			sprintf(Histo.h2Style, "%s", "");
+		}	
 	}	
   
 	

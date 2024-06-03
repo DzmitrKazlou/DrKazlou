@@ -48,12 +48,38 @@ typedef struct
 } DigitizerConfig_t;
 
 typedef struct
-{
+{	
+	bool fPrint;
 	int loop;
+	uint32_t Nb;
 	int TrgCnt[MAX_CH];
 	uint64_t StartTime;
 	
 } ReadoutConfig_t;
+
+typedef struct
+{	
+	int WF_XMIN;
+	int WF_XMAX;
+	int WF_YMIN;
+	int WF_YMAX;
+	
+	int ALBound;
+	int ARBound;
+	int ILBound;
+	int IRBound;
+	
+	bool fBL; // BASE_LINE flag
+	
+	char h2Style[10];
+	
+	TH1D *trace[MAX_CH];
+	TH1D *ampl[MAX_CH];
+	TH1D *integral[MAX_CH];
+	
+	int PSD_BIN = 20;
+		
+} Histograms_t;
 
 
 long get_time();
@@ -72,13 +98,17 @@ CAEN_DGTZ_ErrorCode SwitchOffLogic(int handle, int N_CH);
 
 void ParseConfigFile(FILE *f_ini, DigitizerConfig_t *Dcfg); 
 
+void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH);
+
+void DrawHisto(Histograms_t Histo, int N_CH);
+	
 void InitReadoutConfig(ReadoutConfig_t *Rcfg, int N_CH); 
 
-void FillHisto(int ch, TH1D *h_trace, double &ampl);
+void FillHisto(int ch, Histograms_t *Histo, double &ampl);
 
-void ReadoutLoop(int handle, int N_CH, TH1D *h_trace);
+void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo);
 
-CAEN_DGTZ_ErrorCode DataAcquisition(int N_CH, TH1D *h_trace);
+CAEN_DGTZ_ErrorCode DataAcquisition(int N_CH, Histograms_t *Histo);
 
 
  

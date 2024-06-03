@@ -561,39 +561,68 @@ void ParseConfigFile(FILE *f_ini, DigitizerConfig_t *Dcfg) // CAEN_DGTZ_DPP_PSD_
 		
 }
 
+/////////////////////////////////////////////
+////READOUT FUNCTIONS
+/////////////////////////////////////////////
+
+
 void InitReadoutConfig(ReadoutConfig_t *Rcfg, int N_CH){
 	
-	Rcfg->loop = -1;
+	Rcfg->fPrint = false; // common print flag for debug
+	Rcfg->loop = -1; // ReadoutLoop flag
+	
 	for (int i = 0; i<N_CH; i++)
 		Rcfg->TrgCnt[i] = 0;
 	
 }
 
-//////////////////////////////////////////////
-////READOUT FUNCTIONS
-/////////////////////////////////////////////
+void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH){
+	char str[100];
+	
+	Histo->WF_XMIN = 0, Histo->WF_XMAX = RecordLength[0] * b_width;
+	Histo->WF_YMIN = -500, Histo->WF_YMAX = 1000;
+	Histo->ALBound = 0, Histo->ARBound = RecordLength[0] * b_width;
+	Histo->ILBound = 0, Histo->IRBound = RecordLength[0] * b_width;
+	Histo->fBL = true;
+	
+	for (int i=0; i<N_CH; i++){
+		sprintf(str,"h_trace%i", i);
+		Histo->trace[i] = new TH1D(str, str, RecordLength[i], 0, RecordLength[i]);
+		sprintf(str, "h_ampl%i", i);
+		Histo->ampl[i]= new TH1D(str, str, 16384, 0, 16384);
+		sprintf(str, "h_integral%i", i);
+		Histo->integral[i]= new TH1D(str, str, 100000, 0, 100000);
+		
+	}
+
+}
 
 ////
 
-void DrawHisto(TH1D *h_trace, double xmin, double xmax, double ymin, double ymax){
+void DrawHisto(Histograms_t Histo, int N_CH){
 	
-	
-	h_trace->Draw("HIST");
-	h_trace->GetYaxis()->SetRangeUser(ymin, ymax);
-	h_trace->GetYaxis()->SetTitleOffset(1.1);
-	h_trace->GetYaxis()->SetTitle(" Channels, lbs");
-	h_trace->GetXaxis()->SetRangeUser(xmin, xmax);
-	h_trace->GetXaxis()->SetTitle(" Time, ns");
-	
+	for (int ch=0; ch<N_CH; ch++){
+		if (ch == 0){
+			Histo.trace[ch]->Draw("HIST");
+			Histo.trace[ch]->GetXaxis()->SetRangeUser(Histo.WF_XMIN, Histo.WF_XMAX);
+			Histo.trace[ch]->GetXaxis()->SetTitle(" Time, ns");
+			Histo.trace[ch]->GetXaxis()->SetRangeUser(Histo.WF_YMIN, Histo.WF_YMAX);
+			Histo.trace[ch]->GetYaxis()->SetTitleOffset(1.1);
+			Histo.trace[ch]->GetYaxis()->SetTitle(" Channels, lbs"); 
+		}
+	else
+		Histo.trace[ch]->Draw("SAME");
+	}
 	c1->Update( );
 }
 
 ///
-void FillHisto(int ch,  TH1D *h_trace, double &ampl){ 
+void FillHisto(int ch,  Histograms_t *Histo, double &ampl){ 
 	
 		
 	int BL_CUT = 20; //fNumericEntries[1]->GetNumber();
-	bool BL_flag  = true; //fC[0]->GetState() == kButtonDown ? true : false;
+	Histo->fBL = true; //fC[0]->GetState() == kButtonDown ? true : false;
+	
 	//CH_2D = fNumericEntries[3]->GetNumber();	
 	
 	Double_t BL_mean = 0,  integral = 0;
@@ -602,14 +631,14 @@ void FillHisto(int ch,  TH1D *h_trace, double &ampl){
 	Double_t psd_val =0, Qs = 0, Ql = 0;
 	
 	//Int_t PSD_BIN = 2;
-	//Int_t p = Dcfg.PulsePolarity[ch] == CAEN_DGTZ_PulsePolarityPositive ? 1: -1; //POLARITY
-	Int_t p = -1; // NEGATIVE
+	Int_t p = Dcfg.PulsePolarity[ch] == CAEN_DGTZ_PulsePolarityPositive ? 1: -1; //POLARITY
+	//Int_t p = -1; // NEGATIVE
 	
 	vector <double> vec, vec_bl; 
 	uint16_t *WaveLine;
 	WaveLine = Waveforms->Trace1;
 		
-	h_trace->Reset("ICESM");	
+	Histo->trace[ch]->Reset("ICESM");	
 			
 		for (int j=0; j<(int)Waveforms->Ns; j++)
 			vec_bl.push_back((double)WaveLine[j]);
@@ -627,33 +656,32 @@ void FillHisto(int ch,  TH1D *h_trace, double &ampl){
 				m_stamp = j;
 			}	
 			
-			//if (j * b_width > LBound && j * b_width < RBound)
-			//	integral += vec[j] * p;
+			if (j * b_width > Histo->ILBound && j * b_width < Histo->IRBound)
+				integral += vec[j] * p;
 		}
 		
-		if (BL_flag == true){
+		if (Histo->fBL == true){
 				for ( int j=0; j<vec.size( ); j++)
-					h_trace->Fill(j * b_width, vec[j]);
+					Histo->trace[ch]->Fill(j * b_width, vec[j]);
 			}
 			else{
 				for ( int j=0; j<vec_bl.size( ); j++)
-					h_trace->Fill(j * b_width, vec_bl[j]);
+					Histo->trace[ch]->Fill(j * b_width, vec_bl[j]);
 			}	
 		
 		vec.clear();
 		vec_bl.clear();
-		//h_integral[ch]->Fill(integral);
-		//h_ampl[ch]->Fill(ampl);
+		Histo->integral[ch]->Fill(integral);
+		Histo->ampl[ch]->Fill(ampl);
 }
 
 /////
 ////
 
-void ReadoutLoop(int handle, int N_CH, TH1D *h_trace ){	
+void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){	
 	CAEN_DGTZ_ErrorCode ret = CAEN_DGTZ_Success;	
-	
-	printf("ReadoutLoop activated \n");
-uint32_t Nb=0;
+		
+	//uint32_t Nb=0;
 	//int TrgCnt[MAX_CH];
 	
 	//uint64_t StartTime;
@@ -681,8 +709,8 @@ char CName[100];
 				printf("%s \n", CName);
 				//fTLabel->SetText(CName);
 				gSystem->ProcessEvents(); 
-            	if (Nb != 0){
-					sprintf(CName,"Read. %.2f MB/s ", (float)Nb/((float)ElapsedTime*1048.576f) );
+            	if (Rcfg.Nb != 0){
+					sprintf(CName,"Read. %.2f MB/s ", (float)Rcfg.Nb/((float)ElapsedTime*1048.576f) );
 					printf("%s \n", CName);
 					//fStatusBar->SetText(CName, 0);
 					
@@ -711,7 +739,7 @@ char CName[100];
 						//fStatusBar->SetText(CName, 0);
 				}
 								
-            Nb = 0;
+            Rcfg.Nb = 0;
             		
             PrevRateTime = CurrentTime;
 			gSystem->ProcessEvents(); 
@@ -736,7 +764,7 @@ char CName[100];
 		
 		
 		
-		Nb += BufferSize;
+		Rcfg.Nb += BufferSize;
 		
 		ret = CAEN_DGTZ_GetDPPEvents(handle, buffer, BufferSize, (void**)&Events, NumEvents);
         if (ret) {
@@ -745,8 +773,8 @@ char CName[100];
             ret = QuitMain(handle, buffer, (void**)&Events, Waveforms);
         }
         
-		//if ( fPrint == true)
-		//	printf(" ---------------------------------------- \n");			
+		if (Rcfg.fPrint)
+			printf(" ---------------------------------------- \n");			
 		
 		int Nev = 0;
 			
@@ -762,11 +790,11 @@ char CName[100];
 					
 					Double_t a_val;
 					//FillHisto(ch, a_val, Events[ch][ev].TimeTag); // all data performance
-					FillHisto(ch, h_trace, a_val);
-					printf(" FillHisto CH[%i] Ev[%i] Nev %i ampl %f \n", ch, ev, Nev, a_val );			
+					FillHisto(ch, Histo, a_val);
+					if (Rcfg.fPrint)
+						printf(" FillHisto CH[%i] Ev[%i] Nev %i ampl %f \n", ch, ev, Nev, a_val );			
 					//printf(" Print CH[%i] Ev[%i] Nev %i \n", ch, ev, Nev );			
-				   
-					
+				   					
 					gSystem->ProcessEvents(); 
 				} // events loop
 	
@@ -781,10 +809,10 @@ char CName[100];
 		
 		//if (ElapsedTime>=(fNumericEntries[2]->GetNumber()*1000) && Nev!=0)//&& i==0 ) // sec*1000 = ms // DrawTime = fNumericEntries[6]->GetNumber()
 		if (ElapsedTime>=0.5*1000 && Nev!=0)	
-			DrawHisto(h_trace, 0, Dcfg.RecordLength[0],  WF_YMIN, WF_YMAX);	
+			DrawHisto(*Histo, N_CH);	
 		
-		//if ( fPrint == true)
-		//	printf(" ---------------------------------------- \n");			
+		if (Rcfg.fPrint)
+			printf(" ---------------------------------------- \n");			
 		
 		
 		gSystem->ProcessEvents(); 
@@ -796,7 +824,7 @@ char CName[100];
 	//return ret;
 }
 
-CAEN_DGTZ_ErrorCode DataAcquisition(int N_CH, TH1D *h_trace){
+CAEN_DGTZ_ErrorCode DataAcquisition(int N_CH, Histograms_t *Histo){
 	CAEN_DGTZ_ErrorCode ret = CAEN_DGTZ_Success;
 	
 		
@@ -810,7 +838,7 @@ CAEN_DGTZ_ErrorCode DataAcquisition(int N_CH, TH1D *h_trace){
 				//new TGMsgBox(gClient->GetRoot(), fMain, "Error", CName, kMBIconStop, kMBOk);
 				ret = QuitMain(handle, buffer, (void**)&Events, Waveforms);
 			}
-			ReadoutLoop(handle, N_CH, h_trace);
+			ReadoutLoop(handle, N_CH, Histo);
 		}
 		
 		if (Rcfg.loop == 0){
