@@ -7,9 +7,10 @@
 extern int N_CH, CH_2D;
 extern uint32_t log_val[2][8];
 extern int handle;
-extern int loop;
-extern uint64_t StartTime;
+//extern int loop;
+//extern uint64_t StartTime;
 extern DigitizerConfig_t Dcfg;
+extern ReadoutConfig_t Rcfg;
 extern CAEN_DGTZ_ErrorCode ret;
 
 	extern char *buffer;
@@ -427,8 +428,8 @@ void MainFrame::StartButton()
  	printf("Start button \n");
 	//uint64_t StartTime;
 	
-	StartTime = get_time( );
-	printf("Start time %ld \n", StartTime);
+	Rcfg.StartTime = get_time( );
+	printf("Start time %ld \n", Rcfg.StartTime);
 	
 	/*
 	//Store traces if choosen
@@ -456,7 +457,7 @@ void MainFrame::StartButton()
 	}
 	*/
 	
-	loop = 1;
+	Rcfg.loop = 1;
 	
 	
 	
@@ -469,7 +470,7 @@ void MainFrame::StopButton()
 	printf("Stop button \n");
 	
 	
-	loop = 0;
+	Rcfg.loop = 0;
 	
 	//ret = CAEN_DGTZ_SWStopAcquisition(handle);
 	/*

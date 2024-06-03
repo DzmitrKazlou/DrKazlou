@@ -47,10 +47,16 @@ typedef struct
 	
 } DigitizerConfig_t;
 
+typedef struct
+{
+	int loop;
+	int TrgCnt[MAX_CH];
+	uint64_t StartTime;
+	
+} ReadoutConfig_t;
+
 
 long get_time();
-
-void set_loop(int val);
 
 CAEN_DGTZ_ErrorCode SwitchOffLogic(int handle, int N_CH);
 
@@ -62,10 +68,11 @@ CAEN_DGTZ_ErrorCode SwitchOffLogic(int handle, int N_CH);
  
  CAEN_DGTZ_ErrorCode QuitMain(int handle, char* buffer, void **Events, CAEN_DGTZ_DPP_PSD_Waveforms_t *Waveforms);
  
- void SetDefaultConfiguration(DigitizerConfig_t *Dcfg); //, CAEN_DGTZ_DPP_PSD_Params_t *DPPParams); 
+ void SetDefaultConfiguration(DigitizerConfig_t *Dcfg); 
 
-int ParseConfigFile(FILE *f_ini, DigitizerConfig_t *Dcfg); // CAEN_DGTZ_DPP_PSD_Params_t *DPPParams);
+void ParseConfigFile(FILE *f_ini, DigitizerConfig_t *Dcfg); 
 
+void InitReadoutConfig(ReadoutConfig_t *Rcfg, int N_CH); 
 
 void FillHisto(int ch, TH1D *h_trace, double &ampl);
 

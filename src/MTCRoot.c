@@ -39,10 +39,11 @@
 int N_CH = 2;
 uint32_t log_val[2][8] = {};
 int handle = -1;
-int loop = -1; // Main readout loop flag
+//int loop = -1; // Main readout loop flag
 uint64_t StartTime;
 
 	DigitizerConfig_t   Dcfg;
+	ReadoutConfig_t   Rcfg;
 	CAEN_DGTZ_ErrorCode ret;
 	
 double WF_XMIN, WF_XMAX, WF_YMIN, WF_YMAX;
@@ -570,6 +571,7 @@ int main(int argc, char **argv)
    }
    
    memset(&Dcfg, 0, sizeof(Dcfg));
+   memset(&Rcfg, 0, sizeof(Rcfg));
 	
 	//Configuration file routine
 	
@@ -587,6 +589,7 @@ int main(int argc, char **argv)
 	printf("Config's abtained successful TraceLength[0] %i  Polarity[0] %i Threshold[0] %i \n", Dcfg.RecordLength[0], Dcfg.PulsePolarity[0], Dcfg.thr[0]);
 	//Configuration file routine
 	
+	InitReadoutConfig(&Rcfg, N_CH);	
 	WF_XMIN = 0, WF_XMAX = Dcfg.RecordLength[0] * b_width;
 	WF_YMIN = -500, WF_YMAX = 1000;
 	
