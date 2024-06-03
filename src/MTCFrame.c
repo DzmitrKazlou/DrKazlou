@@ -360,6 +360,8 @@ void MainFrame::InitButton()
 	
 	
 	c1 = fEcanvas1->GetCanvas( );
+	c1->Divide(2, 2, 0.001, 0.001);
+	c1->Modified();
 		
 	//enable buttons after DIGI initialisation
 	fClearButton->SetState (kButtonUp);

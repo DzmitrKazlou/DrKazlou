@@ -602,8 +602,8 @@ void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH){
 
 void DrawHisto(Histograms_t Histo, int N_CH){
 	
-	c1->Divide(2, 2, 0.001, 0.001);
-	c1->Modified();
+	//c1->Divide(2, 2, 0.001, 0.001);
+	//c1->Modified();
 	
 	c1->cd(1);
 	
