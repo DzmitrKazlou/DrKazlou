@@ -39,29 +39,23 @@
 int N_CH = 2;
 uint32_t log_val[2][8] = {};
 int handle = -1;
-//int loop = -1; // Main readout loop flag
-//uint64_t StartTime;
+
 
 	DigitizerConfig_t   Dcfg;
 	ReadoutConfig_t   Rcfg;
 	CAEN_DGTZ_ErrorCode ret;
 	Histograms_t Histo;
 	
-//double WF_XMIN, WF_XMAX, WF_YMIN, WF_YMAX;
-//Int_t PSD_BIN = 2;
-//double LBound, RBound;
 	
 
 
 using namespace std;
 
 	// used for histograms in DrawHisto function
-	Color_t color[16] = {kBlue, kRed, kViolet, kGreen+1, kPink-9, kOrange, kMagenta, kCyan-7, kGray, kBlack, kBlue, kRed, kGreen, kOrange-2, kBlack, kOrange+2}; 			
+	//Color_t color[16] = {kBlue, kRed, kViolet, kGreen+1, kPink-9, kOrange, kMagenta, kCyan-7, kGray, kBlack, kBlue, kRed, kGreen, kOrange-2, kBlack, kOrange+2}; 			
 	
 		
-	
-   
-	//CAEN_DGTZ_EventInfo_t EventInfo;
+		
 	
 	char *buffer = NULL;
 	CAEN_DGTZ_DPP_PSD_Event_t   *Events[MAX_CH];  // events buffer
@@ -70,8 +64,6 @@ using namespace std;
 	TCanvas *c1;
 	
 	
-	//uint32_t Nb=0;
-	//int TrgCnt[MAX_CH];
 	
 	//char * EventPtr = NULL;
 	//uint32_t AllocatedSize, BufferSize, NumEvents[MAX_CH];

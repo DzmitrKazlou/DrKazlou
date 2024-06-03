@@ -14,11 +14,12 @@
 //#include "TROOT.h"
 //#include "TApplication.h"
 #include "TCanvas.h"
+#include "TStyle.h"
 
 #define CAEN_USE_DIGITIZERS
 //#define IGNORE_DPP_DEPRECATED
 
-//extern uint64_t StartTime;
+
 extern DigitizerConfig_t Dcfg;
 extern ReadoutConfig_t Rcfg;
 //extern int loop;
@@ -27,10 +28,10 @@ extern int handle;
 		
 	extern CAEN_DGTZ_DPP_PSD_Event_t   *Events[MAX_CH];  // events buffer
 	extern CAEN_DGTZ_DPP_PSD_Waveforms_t   *Waveforms;         // waveforms buffer
-	//extern TH1D *h_trace;
-	extern double WF_XMIN, WF_XMAX, WF_YMIN, WF_YMAX;
+		
 	
 	extern TCanvas *c1;
+	Color_t color[16] = {kBlue, kRed, kViolet, kGreen+1, kPink-9, kOrange, kMagenta, kCyan-7, kGray, kBlack, kBlue, kRed, kGreen, kOrange-2, kBlack, kOrange+2}; 	
 	
 using namespace std;
 
@@ -602,16 +603,17 @@ void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH){
 void DrawHisto(Histograms_t Histo, int N_CH){
 	
 	for (int ch=0; ch<N_CH; ch++){
+		Histo.trace[ch]->SetLineColor(color[ch]);
 		if (ch == 0){
 			Histo.trace[ch]->Draw("HIST");
 			Histo.trace[ch]->GetXaxis()->SetRangeUser(Histo.WF_XMIN, Histo.WF_XMAX);
 			Histo.trace[ch]->GetXaxis()->SetTitle(" Time, ns");
-			Histo.trace[ch]->GetXaxis()->SetRangeUser(Histo.WF_YMIN, Histo.WF_YMAX);
+			Histo.trace[ch]->GetYaxis()->SetRangeUser(Histo.WF_YMIN, Histo.WF_YMAX);
 			Histo.trace[ch]->GetYaxis()->SetTitleOffset(1.1);
 			Histo.trace[ch]->GetYaxis()->SetTitle(" Channels, lbs"); 
 		}
 	else
-		Histo.trace[ch]->Draw("SAME");
+		Histo.trace[ch]->Draw("SAME HIST");
 	}
 	c1->Update( );
 }
@@ -621,8 +623,7 @@ void FillHisto(int ch,  Histograms_t *Histo, double &ampl){
 	
 		
 	int BL_CUT = 20; //fNumericEntries[1]->GetNumber();
-	Histo->fBL = true; //fC[0]->GetState() == kButtonDown ? true : false;
-	
+		
 	//CH_2D = fNumericEntries[3]->GetNumber();	
 	
 	Double_t BL_mean = 0,  integral = 0;
