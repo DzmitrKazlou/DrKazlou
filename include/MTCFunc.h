@@ -91,6 +91,8 @@ typedef struct
 
 long get_time();
 
+void CalcRate(int N_CH, uint64_t &PrevRateTime);
+
 CAEN_DGTZ_ErrorCode SwitchOffLogic(int handle, int N_CH);
 
  CAEN_DGTZ_ErrorCode SetLogic(int handle, uint32_t reg_val[2][8], int N_CH);

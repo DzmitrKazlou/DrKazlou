@@ -46,6 +46,54 @@ long get_time()
     return time_ms;
 }
 
+void CalcRate(int N_CH, uint64_t &PrevRateTime){
+	char CName[100];
+	uint64_t CurrentTime,  ElapsedTime;
+			CurrentTime = get_time();
+        	ElapsedTime = CurrentTime - PrevRateTime;
+					        	
+			if (ElapsedTime > 1000) { // 1000
+				sprintf(CName,"T: %li s",  (CurrentTime - Rcfg.StartTime) / 1000 );
+				printf("%s \n", CName);
+				Rcfg.TLabel->SetText(CName);
+				gSystem->ProcessEvents(); 
+            	if (Rcfg.Nb != 0){
+					sprintf(CName,"Read. %.2f MB/s ", (float)Rcfg.Nb/((float)ElapsedTime*1048.576f) );
+					printf("%s \n", CName);
+					Rcfg.StatusBar->SetText(CName, 0);
+					
+					for (int ch=0; ch<N_CH; ch++) { //8
+						if (Rcfg.TrgCnt[ch] != 0){
+							sprintf(CName, "CH[%i]: %.2f Hz ", ch, (float)Rcfg.TrgCnt[ch]*1000.0f/(float)ElapsedTime);
+							printf("%s \n", CName);
+							if (ch < 15)
+								Rcfg.StatusBar->SetText(CName, ch+1);
+						}
+						else{
+							sprintf(CName, "No data...");
+							printf("%s \n", CName);
+							if (ch < 15)
+								Rcfg.StatusBar->SetText(CName, ch+1);
+						}
+						Rcfg.TrgCnt[ch] = 0;
+					}
+					printf("No data...\n");
+                	
+				}
+									
+            	else{
+						printf("No data...\n");
+						sprintf(CName, "No data...");
+						Rcfg.StatusBar->SetText(CName, 0);
+				}
+								
+            Rcfg.Nb = 0;
+            		
+            PrevRateTime = CurrentTime;
+			gSystem->ProcessEvents(); 
+        	}
+	
+}
 
 
 CAEN_DGTZ_ErrorCode  SwitchOffLogic(int handle, int N_CH) {
@@ -724,19 +772,16 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 		
 	//uint64_t StartTime;
 	
-	uint64_t CurrentTime, PrevRateTime, ElapsedTime;
+	//uint64_t CurrentTime, PrevRateTime, ElapsedTime;
 	uint32_t BufferSize, NumEvents[MAX_CH];	
-	
-char CName[100];
-	
-	PrevRateTime = get_time();
+
+	uint64_t PrevRateTime = get_time();
 	//double ampl[N_CH];
 		
 	while(Rcfg.loop == 1) {
-		
-			   
+		CalcRate(N_CH, PrevRateTime);			   
 	  // Calculate throughput and trigger rate (every second) 			
-			        	
+		/*	        	
         	CurrentTime = get_time();
         	ElapsedTime = CurrentTime - PrevRateTime;
 
@@ -764,7 +809,7 @@ char CName[100];
 							//if (ch < 15)
 							//	fStatusBar->SetText(CName, ch+1);
 						}
-						//Rcfg.TrgCnt[ch] = 0;
+						Rcfg.TrgCnt[ch] = 0;
 					}
 					printf("No data...\n");
                 	
@@ -776,17 +821,15 @@ char CName[100];
 						//fStatusBar->SetText(CName, 0);
 				}
 								
-            //Rcfg.Nb = 0;
+            Rcfg.Nb = 0;
             		
             PrevRateTime = CurrentTime;
 			gSystem->ProcessEvents(); 
         	}
+		*/	
 		// Calculate throughput and trigger rate (every second) 
 		
 		
-		for (int ch=0; ch<N_CH; ch++) 
-			Rcfg.TrgCnt[ch] = 0;
-	   Rcfg.Nb = 0;
 	   
 		ret = CAEN_DGTZ_ReadData(handle,CAEN_DGTZ_SLAVE_TERMINATED_READOUT_MBLT, buffer, &BufferSize); // Read the buffer from the digitizer 
 		if (ret) {
@@ -808,7 +851,8 @@ char CName[100];
 		
 		ret = CAEN_DGTZ_GetDPPEvents(handle, buffer, BufferSize, (void**)&Events, NumEvents);
         if (ret) {
-            sprintf(CName, "GET_DPPEVENTS");
+            //sprintf(CName, "GET_DPPEVENTS");
+			printf("GET_DPPEVENTS \n");
 			//new TGMsgBox(gClient->GetRoot(), fMain, "Error", CName, kMBIconStop, kMBOk);
             ret = QuitMain(handle, buffer, (void**)&Events, Waveforms);
         }
