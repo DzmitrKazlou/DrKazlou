@@ -726,17 +726,17 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 	
 	//uint64_t StartTime;
 	
-	uint64_t CurrentTime, PrevRateTime, ElapsedTime;
+	//uint64_t CurrentTime, PrevRateTime, ElapsedTime;
 	uint32_t BufferSize, NumEvents[MAX_CH];	
 	
 char CName[100];
 	
-	PrevRateTime = get_time();
+	//PrevRateTime = get_time();
 	//double ampl[N_CH];
 		
 	while(Rcfg.loop == 1) {
 		
-			   
+		/*	   
 	  // Calculate throughput and trigger rate (every second) 			
 			        	
         	CurrentTime = get_time();
@@ -786,7 +786,10 @@ char CName[100];
         	}
 		// Calculate throughput and trigger rate (every second) 
 		
-		
+		*/
+		for (int ch=0; ch<N_CH; ch++) 
+			Rcfg.TrgCnt[ch] = 0;
+	   Rcfg.Nb = 0;
 	   
 		ret = CAEN_DGTZ_ReadData(handle,CAEN_DGTZ_SLAVE_TERMINATED_READOUT_MBLT, buffer, &BufferSize); // Read the buffer from the digitizer 
 		if (ret) {
@@ -816,13 +819,13 @@ char CName[100];
 		if (Rcfg.fPrint)
 			printf(" ---------------------------------------- \n");			
 		
-		int Nev = 0;
+		Rcfg.Nev = 0;
 			
 		for (int ch=0; ch<N_CH; ch++) { 
 			//ampl[ch] = 0;
 			//h_trace[ch]->Reset("ICESM");
 			if (Dcfg.ChannelMask & (1<<ch) ){
-				Nev +=(int)NumEvents[ch];
+				Rcfg.Nev +=(int)NumEvents[ch];
 				for (uint32_t ev=0; ev<(int)NumEvents[ch]; ev++) {
 				
 					CAEN_DGTZ_DecodeDPPWaveforms(handle, (void**)&Events[ch][ev], Waveforms);
@@ -832,7 +835,7 @@ char CName[100];
 					//FillHisto(ch, a_val, Events[ch][ev].TimeTag); // all data performance
 					FillHisto(ch, Histo, a_val);
 					if (Rcfg.fPrint)
-						printf(" FillHisto CH[%i] Ev[%i] Nev %i ampl %f \n", ch, ev, Nev, a_val );			
+						printf(" FillHisto CH[%i] Ev[%i] Nev %i ampl %f \n", ch, ev, Rcfg.Nev, a_val );			
 					//printf(" Print CH[%i] Ev[%i] Nev %i \n", ch, ev, Nev );			
 				   					
 					gSystem->ProcessEvents(); 
@@ -848,8 +851,8 @@ char CName[100];
 				
 		
 		//if (ElapsedTime>=(fNumericEntries[2]->GetNumber()*1000) && Nev!=0)//&& i==0 ) // sec*1000 = ms // DrawTime = fNumericEntries[6]->GetNumber()
-		if (ElapsedTime>=Rcfg.DrawTime*1000 && Nev!=0)	
-			DrawHisto(*Histo, N_CH);	
+		//if (ElapsedTime>=Rcfg.DrawTime*1000 && Rcfg.Nev!=0)	
+		//	DrawHisto(*Histo, N_CH);	
 		
 		if (Rcfg.fPrint)
 			printf(" ---------------------------------------- \n");			

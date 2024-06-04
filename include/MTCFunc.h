@@ -52,6 +52,7 @@ typedef struct
 	bool fPrint;
 	int loop;
 	uint32_t Nb;
+	int Nev;
 	int TrgCnt[MAX_CH];
 	uint64_t StartTime;
 	double DrawTime;

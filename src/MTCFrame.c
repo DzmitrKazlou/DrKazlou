@@ -237,7 +237,7 @@ int iStyle[]	= {0, 0, 2, 0};
 		
 	// status bar
 	
-	Int_t parts[] = {7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 2};
+	Int_t parts[] = {6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 16};
 	fStatusBar = new TGStatusBar(fMain, 100, 20, kHorizontalFrame); //kHorizontalFrame //kSunkenFrame
 	fStatusBar->SetParts(parts, 15);
 	fMain->AddFrame(fStatusBar, new TGLayoutHints(kLHintsBottom | kLHintsLeft | kLHintsExpandX, 0, 0, 2, 0));
@@ -455,7 +455,7 @@ void MainFrame::StartButton()
 	
 	Rcfg.loop = 1;
 	
-	
+	ShowStats( );
 	
 	//ret = CAEN_DGTZ_SWStartAcquisition(handle);
 		
@@ -479,7 +479,62 @@ void MainFrame::StopButton()
 }
 
 
-
+void MainFrame::ShowStats( ){
+	uint64_t CurrentTime, PrevRateTime, ElapsedTime;
+	char CName[100];
+	
+	PrevRateTime = get_time();
+	
+		while(Rcfg.loop == 1){
+			CurrentTime = get_time();
+        	ElapsedTime = CurrentTime - PrevRateTime;
+			        	        	
+			if (ElapsedTime > 1000) { // 1000 - 1 sec
+				sprintf(CName,"T: %li s",  (CurrentTime - Rcfg.StartTime) / 1000 );
+				printf("%s \n", CName);
+				//fTLabel->SetText(CName);
+				gSystem->ProcessEvents(); 
+            	if (Rcfg.Nb != 0){
+					sprintf(CName,"Read. %.2f MB/s ", (float)Rcfg.Nb/((float)ElapsedTime*1048.576f) );
+					printf("%s \n", CName);
+					//fStatusBar->SetText(CName, 0);
+					
+					for (int ch=0; ch<N_CH; ch++) { //8
+						if (Rcfg.TrgCnt[ch] != 0){
+							sprintf(CName, "CH[%i]: %.2f Hz ", ch, (float)Rcfg.TrgCnt[ch]*1000.0f/(float)ElapsedTime);
+							printf("%s \n", CName);
+							//if (ch < 15)
+							//	fStatusBar->SetText(CName, ch+1);
+						}
+						else{
+							sprintf(CName, "No data...");
+							printf("%s \n", CName);
+							//if (ch < 15)
+							//	fStatusBar->SetText(CName, ch+1);
+						}
+						Rcfg.TrgCnt[ch] = 0;
+					}
+					printf("No data...\n");
+                	//if (ret == CAEN_DGTZ_Timeout) printf ("Timeout...\n"); else printf("No data...\n");
+				}
+									
+            	else{
+						printf("No data...\n");
+						//sprintf(CName, "No data...");
+						//fStatusBar->SetText(CName, 0);
+				}
+								
+            Rcfg.Nb = 0;
+            		
+            PrevRateTime = CurrentTime;
+			gSystem->ProcessEvents(); 
+        	}
+		// Calculate throughput and trigger rate (every second) 
+		
+			if (ElapsedTime>=Rcfg.DrawTime*1000 && Rcfg.Nev!=0)	
+				DrawHisto(Histo, N_CH);	
+		}
+}
 
 void MainFrame::HandleMenu(Int_t id)
 {

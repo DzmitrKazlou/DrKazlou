@@ -161,6 +161,7 @@ public:
    void ClearHisto();	
    void StartButton();	
    void StopButton();
+   void ShowStats();
    
    void DoSetVal();
    void DoCheckBox();
