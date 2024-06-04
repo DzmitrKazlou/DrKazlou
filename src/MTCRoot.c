@@ -22,6 +22,7 @@
 
 
 #include "TROOT.h"
+#include "ROOT/TFuture.hxx"
 #include "TApplication.h"
 #include "TCanvas.h"
 #include "TH1D.h"
@@ -549,13 +550,21 @@ void MainFrame::ReadoutLoop( ){
 }
 
 */
+void gui(){
+	
+	new MainFrame(gClient->GetRoot(), 1800, 800);
+}
 
+void daq(){
+	
+	ret = DataAcquisition(N_CH, &Histo);
+}
 
 //---- Main program ------------------------------------------------------------
 
 int main(int argc, char **argv)
 {
-		
+	ROOT::EnableImplicitMT(2);		
    TApplication theApp("App", &argc, argv);
 
    if (gROOT->IsBatch()) {
@@ -587,9 +596,17 @@ int main(int argc, char **argv)
 		
    //GUI;
    handle = 0;
-   new MainFrame(gClient->GetRoot(), 1800, 800);
+   //new MainFrame(gClient->GetRoot(), 1800, 800);
+    
+   // Create the task group and give work to it
+   ROOT::Experimental::TTaskGroup tg;
+   tg.Run(gui);
+   tg.Run(daq);
+      
+   // Wait until all items are complete
+   tg.Wait();
    
-   ret = DataAcquisition(N_CH, &Histo);
+   //ret = DataAcquisition(N_CH, &Histo);
    
 
    theApp.Run();

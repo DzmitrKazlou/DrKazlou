@@ -486,6 +486,7 @@ void MainFrame::ShowStats( ){
 	PrevRateTime = get_time();
 	
 		while(Rcfg.loop == 1){
+			
 			CurrentTime = get_time();
         	ElapsedTime = CurrentTime - PrevRateTime;
 			        	        	
