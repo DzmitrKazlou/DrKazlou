@@ -551,8 +551,9 @@ void MainFrame::ReadoutLoop( ){
 }
 
 */
+// for far future
+/* 
 auto gui = [ ]( ){
-	
 	new MainFrame(gClient->GetRoot(), 1800, 800);
 	return 13;
 };
@@ -561,6 +562,8 @@ auto daq = [ ]( ){
 	
 	ret = DataAcquisition(N_CH, &Histo);
 };
+*/
+
 
 //---- Main program ------------------------------------------------------------
 
@@ -599,16 +602,16 @@ int main(int argc, char **argv)
 		
    //GUI;
    handle = 0;
-   //new MainFrame(gClient->GetRoot(), 1800, 800);
+   new MainFrame(gClient->GetRoot(), 1800, 800);
     
    // Create the task group and give work to it
-   auto t1  = async( gui);
-   auto t2  = async( daq);
-   t1.get();
-      t2.get();
+   //auto t1  = async( gui);
+   //auto t2  = async( daq);
+   //t1.get();
+   //t2.get();
    
    
-   //ret = DataAcquisition(N_CH, &Histo);
+   ret = DataAcquisition(N_CH, &Histo);
    
 
    theApp.Run();

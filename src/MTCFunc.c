@@ -721,12 +721,10 @@ void FillHisto(int ch,  Histograms_t *Histo, double &ampl){
 void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){	
 	CAEN_DGTZ_ErrorCode ret = CAEN_DGTZ_Success;	
 		
-	//uint32_t Nb=0;
-	//int TrgCnt[MAX_CH];
-	
+		
 	//uint64_t StartTime;
 	
-	//uint64_t CurrentTime, PrevRateTime, ElapsedTime;
+	uint64_t CurrentTime, PrevRateTime, ElapsedTime;
 	uint32_t BufferSize, NumEvents[MAX_CH];	
 	
 char CName[100];
@@ -736,7 +734,7 @@ char CName[100];
 		
 	while(Rcfg.loop == 1) {
 		
-		/*	   
+			   
 	  // Calculate throughput and trigger rate (every second) 			
 			        	
         	CurrentTime = get_time();
@@ -767,7 +765,7 @@ char CName[100];
 							//if (ch < 15)
 							//	fStatusBar->SetText(CName, ch+1);
 						}
-						Rcfg.TrgCnt[ch] = 0;
+						//Rcfg.TrgCnt[ch] = 0;
 					}
 					printf("No data...\n");
                 	//if (ret == CAEN_DGTZ_Timeout) printf ("Timeout...\n"); else printf("No data...\n");
@@ -779,14 +777,14 @@ char CName[100];
 						//fStatusBar->SetText(CName, 0);
 				}
 								
-            Rcfg.Nb = 0;
+            //Rcfg.Nb = 0;
             		
             PrevRateTime = CurrentTime;
 			gSystem->ProcessEvents(); 
         	}
 		// Calculate throughput and trigger rate (every second) 
 		
-		*/
+		
 		for (int ch=0; ch<N_CH; ch++) 
 			Rcfg.TrgCnt[ch] = 0;
 	   Rcfg.Nb = 0;

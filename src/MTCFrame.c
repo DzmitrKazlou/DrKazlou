@@ -455,7 +455,7 @@ void MainFrame::StartButton()
 	
 	Rcfg.loop = 1;
 	
-	ShowStats( );
+	//ShowStats( );
 	
 	//ret = CAEN_DGTZ_SWStartAcquisition(handle);
 		
