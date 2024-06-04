@@ -676,15 +676,11 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 	//c1->Modified();
 	
 	c1->cd(1);
-		for (int ch=0; ch<N_CH; ch++)
+		for (int ch=0; ch<N_CH; ch++){
 			Histo.trace[ch]->Draw(ch == 0 ? "HIST" : "HIST SAME");
-		/*
-		Histo.trace[ch]->GetXaxis()->SetRangeUser(Histo.WF_XMIN, Histo.WF_XMAX);
-			Histo.trace[ch]->GetXaxis()->SetTitle(" Time, ns");
-			Histo.trace[ch]->GetYaxis()->SetRangeUser(Histo.WF_YMIN, Histo.WF_YMAX);
-			Histo.trace[ch]->GetYaxis()->SetTitleOffset(1.1);
-			Histo.trace[ch]->GetYaxis()->SetTitle(" Channels, lbs"); 
-		*/
+			if (ch == 0)
+				Histo.trace[ch]->GetYaxis()->SetRangeUser(Histo.WF_YMIN, Histo.WF_YMAX);
+		}
 		
 	c1->cd(2);
 		for (int ch=0; ch<N_CH; ch++)
@@ -696,7 +692,7 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 			Histo.integral[ch]->Draw(ch == 0 ? "HIST" : "HIST SAME");
 	
 	
-	c1->Update( );
+	//c1->Update( );
 }
 
 ///
