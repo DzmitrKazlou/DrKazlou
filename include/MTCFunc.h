@@ -5,6 +5,8 @@
 #include <../include/CAENDigitizerType.h>
 #include "CAENDigitizer.h"
 #include "TH1D.h"
+#include "TGLabel.h"
+#include "TGStatusBar.h"
 
 #define MAX_CH 16 
 #define b_width 2 //2 ns bin width for 500MS/s V1730S
@@ -56,6 +58,9 @@ typedef struct
 	int TrgCnt[MAX_CH];
 	uint64_t StartTime;
 	double DrawTime;
+	
+	TGLabel  *TLabel;
+	TGStatusBar *StatusBar;
 	
 } ReadoutConfig_t;
 

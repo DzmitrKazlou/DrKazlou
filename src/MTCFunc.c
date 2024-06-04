@@ -744,7 +744,7 @@ char CName[100];
 			if (ElapsedTime > 1000) { // 1000
 				sprintf(CName,"T: %li s",  (CurrentTime - Rcfg.StartTime) / 1000 );
 				printf("%s \n", CName);
-				//fTLabel->SetText(CName);
+				Rcfg.TLabel->SetText(CName);
 				gSystem->ProcessEvents(); 
             	if (Rcfg.Nb != 0){
 					sprintf(CName,"Read. %.2f MB/s ", (float)Rcfg.Nb/((float)ElapsedTime*1048.576f) );

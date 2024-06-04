@@ -218,9 +218,9 @@ int iStyle[]	= {0, 0, 2, 0};
    fClearButton->Connect("Clicked()","MainFrame",this,"ClearHisto()");
    vframe1->AddFrame(fClearButton, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 4, 4, 4, 4));	
 	
-	fTLabel = new TGLabel(vframe1, "Timer 000 000 000");
-	fTLabel->SetTextFont(sFont);
-	fTLabel->Resize(200, 30);
+	Rcfg.TLabel = new TGLabel(vframe1, "Timer 000 000 000");
+	Rcfg.TLabel->SetTextFont(sFont);
+	Rcfg.TLabel->Resize(200, 30);
 	
 	vframe1->AddFrame(fTLabel, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
    	
@@ -238,8 +238,8 @@ int iStyle[]	= {0, 0, 2, 0};
 	// status bar
 	
 	Int_t parts[] = {6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 16};
-	fStatusBar = new TGStatusBar(fMain, 100, 20, kHorizontalFrame); //kHorizontalFrame //kSunkenFrame
-	fStatusBar->SetParts(parts, 15);
+	Rcfg.StatusBar = new TGStatusBar(fMain, 100, 20, kHorizontalFrame); //kHorizontalFrame //kSunkenFrame
+	Rcfg.StatusBar->SetParts(parts, 15);
 	fMain->AddFrame(fStatusBar, new TGLayoutHints(kLHintsBottom | kLHintsLeft | kLHintsExpandX, 0, 0, 2, 0));
 	
 	
@@ -455,7 +455,7 @@ void MainFrame::StartButton()
 	
 	Rcfg.loop = 1;
 	
-	ShowStats( );
+	//ShowStats( );
 	
 	//ret = CAEN_DGTZ_SWStartAcquisition(handle);
 		
