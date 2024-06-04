@@ -5,7 +5,7 @@
 #include <vector>
 #include <array>
 #include <iterator>
-
+#include <future>
 //#include <../include/CAENDigitizerType.h>
 //#include "CAENDigitizer.h"
 //#include "CAENComm.h"
@@ -22,7 +22,8 @@
 
 
 #include "TROOT.h"
-#include "ROOT/TFuture.hxx"
+
+//#include "ROOT/TFuture.hxx"
 #include "TApplication.h"
 #include "TCanvas.h"
 #include "TH1D.h"
@@ -550,21 +551,23 @@ void MainFrame::ReadoutLoop( ){
 }
 
 */
-void gui(){
+auto gui = [ ]( ){
 	
 	new MainFrame(gClient->GetRoot(), 1800, 800);
-}
+	return 13;
+};
 
-void daq(){
+auto daq = [ ]( ){
 	
 	ret = DataAcquisition(N_CH, &Histo);
-}
+};
 
 //---- Main program ------------------------------------------------------------
 
 int main(int argc, char **argv)
 {
-	ROOT::EnableImplicitMT(2);		
+	//ROOT::EnableThreadSafety( );		
+	
    TApplication theApp("App", &argc, argv);
 
    if (gROOT->IsBatch()) {
@@ -599,12 +602,11 @@ int main(int argc, char **argv)
    //new MainFrame(gClient->GetRoot(), 1800, 800);
     
    // Create the task group and give work to it
-   ROOT::Experimental::TTaskGroup tg;
-   tg.Run(gui);
-   tg.Run(daq);
-      
-   // Wait until all items are complete
-   tg.Wait();
+   auto t1  = async( gui);
+   auto t2  = async( daq);
+   t1.get();
+      t2.get();
+   
    
    //ret = DataAcquisition(N_CH, &Histo);
    
