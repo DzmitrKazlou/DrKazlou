@@ -33,14 +33,17 @@ ParamsMenu::ParamsMenu(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t
 	fVF0 = new TGVerticalFrame(f1, 200, 300);
 	f1->AddFrame(fVF0, new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 5, 5, 5));//
 	
+	fCAll = new TGCheckButton(fVF0, "all in once", 666);	
+	fVF0->AddFrame(fCAll, new TGLayoutHints(kLHintsCenterX, 0, 0, 0, 0));
+	
 	for (j = 0; j < 17; j++) { 
 	
 		fLabel[j] = new TGLabel(fVF0, paramlabel[j]);
 		fLabel[j]->SetTextFont(labelFont);
 		if (j == 0)
-			fVF0->AddFrame(fLabel[j], new TGLayoutHints(kLHintsCenterX, 0, 0, 14, 2)); // left right top bottom
+			fVF0->AddFrame(fLabel[j], new TGLayoutHints(kLHintsCenterX, 0, 0, 0, 2)); // left right top bottom
 		else
-			fVF0->AddFrame(fLabel[j], new TGLayoutHints(kLHintsCenterX, 0, 0, 4, 4));
+			fVF0->AddFrame(fLabel[j], new TGLayoutHints(kLHintsCenterX, 0, 0, 3, 4));
 	}				
 	
 	fVF0->Resize();
@@ -140,9 +143,9 @@ ParamsMenu::ParamsMenu(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t
 			fVF[i]->AddFrame(fTEntries[i][j], new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 3, 3)); //kLHintsCenterY | kLHintsLeft  //new TGLayoutHints(0, 0, 0, 4, 4)
 		}
 		
-		// sel triggers checkboxies	
+		// self triggers checkboxies	
 		fCselft[i] = new TGCheckButton(fVF[i], "", i+16);	
-		Dcfg.selft[i] ==0 ? fCselft[i]->SetState(kButtonUp) : fCselft[i]->SetState(kButtonDown); 
+		Dcfg.selft[i] == 0 ? fCselft[i]->SetState(kButtonUp) : fCselft[i]->SetState(kButtonDown); 
 		fCselft[i]->Connect("Clicked()", "ParamsMenu", this, "DoCheckBox()");
 		fVF[i]->AddFrame(fCselft[i], new TGLayoutHints(kLHintsCenterY | kLHintsCenterX, 2, 2, 4, 4));
 		
@@ -165,7 +168,7 @@ ParamsMenu::ParamsMenu(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t
 		fVF[i]->AddFrame(fCdiscr[i], new TGLayoutHints(kLHintsCenterY | kLHintsCenterX, 2, 2, 2, 2));
 		
 		//cfdd textentry
-		j =7;
+		j = 7;
 		tbuf[i][j] = new TGTextBuffer(10);
 		sprintf(str, "%i", Dcfg.cfdd[i]);	
 		tbuf[i][j]->AddText(0, str);
@@ -188,7 +191,7 @@ ParamsMenu::ParamsMenu(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t
 		fVF[i]->AddFrame(fCcfdf[i], new TGLayoutHints(kLHintsCenterY | kLHintsCenterX, 2, 2, 2, 2));
 		
 		//tvaw textentry
-		j =8;
+		j = 8;
 		tbuf[i][j] = new TGTextBuffer(10);
 		sprintf(str, "%i", Dcfg.tvaw[i]);	
 		tbuf[i][j]->AddText(0, str);
@@ -197,6 +200,7 @@ ParamsMenu::ParamsMenu(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t
 		fTEntries[i][j]->Connect("ReturnPressed()", "ParamsMenu", this, "DoSetVal()");	
 		fTEntries[i][j]->Resize(50, fTEntries[i][j]->GetDefaultHeight());
 		fTEntries[i][j]->SetFont(paramFont);
+		fTEntries[i][j]->SetEnabled(0); // disabled for better times
 		fVF[i]->AddFrame(fTEntries[i][j], new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 3, 3)); //kLHintsCenterY | kLHintsLeft  //new TGLayoutHints(0, 0, 0, 4, 4)
 		
 		//csens charge sensibility
@@ -258,47 +262,181 @@ void ParamsMenu::DoSetVal()
 	Int_t i = id%16;
 	Int_t j = id  / 16;
 	
-	printf("smth changed in %i i = %i j = %i, new val = %s num : %i \n", id, i, j, tbuf[i][j]->GetString(), atoi( tbuf[i][j]->GetString() ) );
+	fCAll->GetState()== kButtonDown ? fAll = true : fAll = false;
+	//printf("smth changed in %i i = %i j = %i, new val = %s num : %i \n", id, i, j, tbuf[i][j]->GetString(), atoi( tbuf[i][j]->GetString() ) );
 	
-	
+	//RecordLength
 	if (id <16){
 		Dcfg.RecordLength[i] = atoi( tbuf[i][j]->GetString() );
-		if (id == 0)
-			ret = CAEN_DGTZ_SetRecordLength(handle, Dcfg.RecordLength[id], id);
-	}	
-	if (id >=16 && id <32)
+		ret = CAEN_DGTZ_SetRecordLength(handle, Dcfg.RecordLength[i], i);
+		
+		if (fAll){
+			for (int n = 0; n < N_CH; n++){ 
+				if (n != i){
+					Dcfg.RecordLength[n] = Dcfg.RecordLength[i];
+					fTEntries[n][j]->SetText(tbuf[i][j]->GetString( ));
+					ret = CAEN_DGTZ_SetRecordLength(handle, Dcfg.RecordLength[n], n);
+				}
+			}
+		}
+	}
+	
+	//pretrigger
+	if (id >=16 && id <32){
 		Dcfg.PreTrigger[i] = atoi( tbuf[i][j]->GetString() );
+		ret = CAEN_DGTZ_SetDPPPreTriggerSize(handle, i, Dcfg.PreTrigger[i]);  //30
+		
+		if (fAll){
+			for (int n = 0; n < N_CH; n++){ 
+				if (n != i){
+					Dcfg.PreTrigger[n] = Dcfg.PreTrigger[i];
+					fTEntries[n][j]->SetText(tbuf[i][j]->GetString( ));
+					ret = CAEN_DGTZ_SetDPPPreTriggerSize(handle, n, Dcfg.PreTrigger[n]);
+				}
+			}
+		}
+	}
+	
+	// DCOffset
 	if (id >=32 && id <48){
-		Dcfg.DCOffset[id-32] = atoi( tbuf[i][j]->GetString() );
-		ret = CAEN_DGTZ_SetChannelDCOffset(handle, id-32, Dcfg.DCOffset[id-32]); //0x8000
-	}	
+		Dcfg.DCOffset[i] = atoi( tbuf[i][j]->GetString() );
+		ret = CAEN_DGTZ_SetChannelDCOffset(handle, i, Dcfg.DCOffset[i]); //0x8000
+		
+		if (fAll){
+			for (int n = 0; n < N_CH; n++){ 
+				if (n != i){
+					Dcfg.DCOffset[n] = Dcfg.DCOffset[i];
+					fTEntries[n][j]->SetText(tbuf[i][j]->GetString( ));
+					ret = CAEN_DGTZ_SetChannelDCOffset(handle, n, Dcfg.DCOffset[n]); //0x8000
+				}
+			}
+		}
+	}
+	
+	// thresholds
 	if (id >=48 && id <64){
 		Dcfg.thr[i] = atoi( tbuf[i][j]->GetString() );
 		printf(" thr[%i] set to : %i \n", i, Dcfg.thr[i]);	
-		uint32_t reg_data;
 		//ret = CAEN_DGTZ_ReadRegister(handle, 0x1080, &reg_data);
-		ret = CAEN_DGTZ_WriteRegister(handle, th_add[id-48], Dcfg.thr[i]);
-		ret = CAEN_DGTZ_ReadRegister(handle, th_add[id-48], &reg_data);
-		printf(" In  0x%04X 0x%04X \n", th_add[id-48], reg_data);	
+		ret = CAEN_DGTZ_WriteRegister(handle, ThresholdAddress[i], Dcfg.thr[i]);
+		ret = CAEN_DGTZ_ReadRegister(handle, ThresholdAddress[i], &reg_data);
+		printf(" In  0x%04X 0x%04X \n", ThresholdAddress[i], reg_data);	
 		
+		if (fAll){
+			for (int n = 0; n < N_CH; n++){ 
+				if (n != i){
+					Dcfg.thr[n] = Dcfg.thr[i];
+					fTEntries[n][j]->SetText(tbuf[i][j]->GetString( ));
+					
+					ret = CAEN_DGTZ_WriteRegister(handle, ThresholdAddress[n], Dcfg.thr[n]);
+					ret = CAEN_DGTZ_ReadRegister(handle, ThresholdAddress[n], &reg_data);
+					printf(" In  0x%04X 0x%04X \n", ThresholdAddress[n], reg_data);	
+				}
+			}
+		}
+		
+	}
+	
+	
+	// Long Gate [samples]
+	if (id >=64 && id <80){
+		Dcfg.lgate[i] = atoi( tbuf[i][j]->GetString() );
+		printf(" lgate[%i] set to : %i \n", i, Dcfg.lgate[i]);	
+		ret = CAEN_DGTZ_WriteRegister(handle, LongGateWidthAddress[i], Dcfg.lgate[i]);
+		ret = CAEN_DGTZ_ReadRegister(handle, LongGateWidthAddress[i], &reg_data);
+		printf(" In  0x%04X 0x%04X \n", LongGateWidthAddress[i], reg_data);	
+		
+		if (fAll){
+			for (int n = 0; n < N_CH; n++){ 
+				if (n != i){
+					Dcfg.lgate[n] = Dcfg.lgate[i];
+					fTEntries[n][j]->SetText(tbuf[i][j]->GetString( ));
+					
+					ret = CAEN_DGTZ_WriteRegister(handle, LongGateWidthAddress[n], Dcfg.lgate[n]);
+					ret = CAEN_DGTZ_ReadRegister(handle, LongGateWidthAddress[n], &reg_data);
+					printf(" In  0x%04X 0x%04X \n", LongGateWidthAddress[n], reg_data);	
+				}
+			}
+		}
+	}	
+		
+	// Short Gate [samples]
+	if (id >=80 && id <96){
+		Dcfg.sgate[i] = atoi( tbuf[i][j]->GetString() );
+		printf(" sgate[%i] set to : %i \n", i, Dcfg.sgate[i]);	
+		ret = CAEN_DGTZ_WriteRegister(handle, ShortGateWidthAddress[i], Dcfg.sgate[i]);
+		ret = CAEN_DGTZ_ReadRegister(handle, ShortGateWidthAddress[i], &reg_data);
+		printf(" In  0x%04X 0x%04X \n", ShortGateWidthAddress[i], reg_data);	
+		
+		if (fAll){
+			for (int n = 0; n < N_CH; n++){ 
+				if (n != i){
+					Dcfg.sgate[n] = Dcfg.sgate[i];
+					fTEntries[n][j]->SetText(tbuf[i][j]->GetString( ));
+					
+					ret = CAEN_DGTZ_WriteRegister(handle, ShortGateWidthAddress[n], Dcfg.sgate[n]);
+					ret = CAEN_DGTZ_ReadRegister(handle, ShortGateWidthAddress[n], &reg_data);
+					printf(" In  0x%04X 0x%04X \n", ShortGateWidthAddress[n], reg_data);	
+				}
+			}
+		}
 	}	
 	
-	if (id >=64 && id <80)
-		Dcfg.lgate[i] = atoi( tbuf[i][j]->GetString() );
-	if (id >=80 && id <96)
-		Dcfg.sgate[i] = atoi( tbuf[i][j]->GetString() );
-	if (id >=96 && id <112)
+	// Gate Offset (pregate)[samples]
+	if (id >=96 && id <112){
 		Dcfg.pgate[i] = atoi( tbuf[i][j]->GetString() );
-	if (id >=112 && id <128)
+		printf(" pgate[%i] set to : %i \n", i, Dcfg.pgate[i]);	
+		ret = CAEN_DGTZ_WriteRegister(handle, GateOffsetAddress[i], Dcfg.pgate[i]);
+		ret = CAEN_DGTZ_ReadRegister(handle, GateOffsetAddress[i], &reg_data);
+		printf(" In  0x%04X 0x%04X \n",GateOffsetAddress[i], reg_data);	
+		
+		if (fAll){
+			for (int n = 0; n < N_CH; n++){ 
+				if (n != i){
+					Dcfg.pgate[n] = Dcfg.pgate[i];
+					fTEntries[n][j]->SetText(tbuf[i][j]->GetString( ));
+					
+					ret = CAEN_DGTZ_WriteRegister(handle, GateOffsetAddress[n], Dcfg.pgate[n]);
+					ret = CAEN_DGTZ_ReadRegister(handle, GateOffsetAddress[n], &reg_data);
+					printf(" In  0x%04X 0x%04X \n", GateOffsetAddress[n], reg_data);	
+				}
+			}
+		}
+	}
+	// CFD delay [samples]
+	if (id >=112 && id <128){
 		Dcfg.cfdd[i] = atoi( tbuf[i][j]->GetString() );
-	if (id >=128 && id <144)
-		Dcfg.tvaw[i] = atoi( tbuf[i][j]->GetString() );
+		ret = CAEN_DGTZ_ReadRegister(handle, CFDSettingsAddress[i], &reg_data);
+		printf(" Previously in  0x%04X: %08X \n", CFDSettingsAddress[i], reg_data);
+		reg_data = (reg_data &~ (0x0F) ) + Dcfg.cfdd[i];
+		ret = CAEN_DGTZ_WriteRegister(handle, CFDSettingsAddress[i], reg_data);
+		ret = CAEN_DGTZ_ReadRegister(handle, CFDSettingsAddress[i], &reg_data);
+		printf(" In  0x%04X 0x%08X \n", CFDSettingsAddress[i], reg_data);	
+		
+		if (fAll){
+			for (int n = 0; n < N_CH; n++){ 
+				if (n != i){
+					Dcfg.cfdd[n] = Dcfg.cfdd[i];
+					fTEntries[n][j]->SetText(tbuf[i][j]->GetString( ));
+					
+					ret = CAEN_DGTZ_ReadRegister(handle, CFDSettingsAddress[n], &reg_data);
+					printf(" Previously in  0x%04X: %08X \n", CFDSettingsAddress[n], reg_data);
+					reg_data = (reg_data &~ (0x0F) ) + Dcfg.cfdd[n];
+					ret = CAEN_DGTZ_WriteRegister(handle, CFDSettingsAddress[n], reg_data);
+					ret = CAEN_DGTZ_ReadRegister(handle, CFDSettingsAddress[n], &reg_data);
+					printf(" In  0x%04X 0x%08X \n", CFDSettingsAddress[n], reg_data);	
+				}
+			}
+		}
+	}
 
-	
-	ret = SetDPPParameters(handle, Dcfg);
-	for (int i=0;  i <N_CH; i++)
-		if (Dcfg.thr[i] > 4000 )
-			ret = CAEN_DGTZ_WriteRegister(handle, th_add[i], Dcfg.thr[i]);
+	//if (id >=128 && id <144)
+	//	Dcfg.tvaw[i] = atoi( tbuf[i][j]->GetString() );
+
+	//ret = SetDPPParameters(handle, Dcfg);
+	//for (int i=0;  i <N_CH; i++)
+	//	if (Dcfg.thr[i] > 4000 )
+	//		ret = CAEN_DGTZ_WriteRegister(handle, th_add[i], Dcfg.thr[i]);
 	
 	
 }
@@ -307,21 +445,58 @@ void ParamsMenu::DoCheckBox()
 {
 	TGCheckButton *chb = (TGCheckButton *) gTQSender;
 	Int_t id = chb->WidgetId();
-	printf("checkbox changed %i \n", id);
+	//printf("checkbox changed %i \n", id);
+	fCAll->GetState()== kButtonDown ? fAll = true : fAll = false;
 	
-	
+	//enabled channels mask
 	if (id <16){
+		
 		fC[id]->GetState()== kButtonDown ? Dcfg.ChannelMask  |=  (1<<id) : Dcfg.ChannelMask  &= ~ (1<<id);
-		printf("channelmask: %i \n", Dcfg.ChannelMask);
-	}	
+		ret = CAEN_DGTZ_ReadRegister(handle, EnableMaskAddress, &reg_data);
+		ret = CAEN_DGTZ_WriteRegister(handle, EnableMaskAddress, Dcfg.ChannelMask);	
+				
+		if (fAll){
+			for (int i = 0; i < N_CH; i++){ 
+				if ( i!=id  ){
+					fC[i]->SetState( fC[id]->GetState( ) );
+					fC[i]->GetState()== kButtonDown ? Dcfg.ChannelMask  |=  (1<<i) : Dcfg.ChannelMask  &= ~ (1<<i);
+				}	
+			}
+			
+			ret = CAEN_DGTZ_ReadRegister(handle, EnableMaskAddress, &reg_data);
+			ret = CAEN_DGTZ_WriteRegister(handle, EnableMaskAddress, Dcfg.ChannelMask);	
+		}
+	}
 	
-	if (id >=16 && id <32 )
-		fCselft[id-16]->GetState()== kButtonUp ? Dcfg.selft[id-16] = 0 : Dcfg.selft[id-16] = 1;
+	//self triggers
+	if (id >=16 && id <32 ){
+		fCselft[id-16]->GetState()== kButtonDown ? Dcfg.selft[id-16] = 0 : Dcfg.selft[id-16] = 1;
+		ret = CAEN_DGTZ_ReadRegister(handle, DPPAlgControlAddress[id-16], &reg_data);
+		Dcfg.selft[id-16] ==1 ? reg_data |= (1<<24) : reg_data &= ~(1<<24); //[b24] responsible for self trigger
+ 		ret = CAEN_DGTZ_WriteRegister(handle, DPPAlgControlAddress[id-16], reg_data);	
+				
+		if (fAll){
+			for (int i = 0; i < N_CH; i++){ 
+				if ( i!=(id-16) ){
+					fCselft[i]->SetState( fCselft[id-16]->GetState( ) );
+					fCselft[i]->GetState()== kButtonDown ? Dcfg.selft[i] = 0 : Dcfg.selft[i] = 1;
+					
+					ret = CAEN_DGTZ_ReadRegister(handle, DPPAlgControlAddress[i], &reg_data);
+					Dcfg.selft[i] ==1 ? reg_data |= (1<<24) : reg_data &= ~(1<<24); //[b24] responsible for self trigger
+					ret = CAEN_DGTZ_WriteRegister(handle, DPPAlgControlAddress[i], reg_data);	
+					
+				}	
+			}
+				
+		}
+		
+		
+	}
 	
-	ret = SetDPPParameters(handle, Dcfg);
-	for (int i=0;  i <N_CH; i++)
-		if (Dcfg.thr[i] > 4000 )
-			ret = CAEN_DGTZ_WriteRegister(handle, th_add[i], Dcfg.thr[i]);
+	//ret = SetDPPParameters(handle, Dcfg);
+	//for (int i=0;  i <N_CH; i++)
+	//	if (Dcfg.thr[i] > 4000 )
+	//		ret = CAEN_DGTZ_WriteRegister(handle, th_add[i], Dcfg.thr[i]);
 		
 }
 
@@ -329,46 +504,115 @@ void ParamsMenu::DoComboBox()
 {
 	TGComboBox *cb = (TGComboBox *) gTQSender;
 	Int_t id = cb->WidgetId();
+	Int_t i = id%16;
 		
-	printf("combobox changed %i  \n", id);
+	fCAll->GetState()== kButtonDown ? fAll = true : fAll = false;		
+	//printf("combobox changed %i  \n", id);
 	
-	if (id <16 && fCPol[id]->GetSelected() == 0 ){
-		Dcfg.PulsePolarity[id]  = CAEN_DGTZ_PulsePolarityNegative;
-		printf("Ch[%i] : %s  \n", id, "Negative");
-		ret = CAEN_DGTZ_SetChannelPulsePolarity(handle, id, Dcfg.PulsePolarity[id]);
+	// polarity 
+	if (id <16){
+		Dcfg.PulsePolarity[i]  = fCPol[i]->GetSelected() == 0 ?  CAEN_DGTZ_PulsePolarityNegative : CAEN_DGTZ_PulsePolarityPositive;
+		ret = CAEN_DGTZ_SetChannelPulsePolarity(handle, i, Dcfg.PulsePolarity[i]);
+		
+		if (fAll){
+			for (int n = 0; n < N_CH; n++){ 
+				if ( n!=i) {
+					fCPol[n]->Select(fCPol[i]->GetSelected( ) );
+					Dcfg.PulsePolarity[n]  = Dcfg.PulsePolarity[i];
+					ret = CAEN_DGTZ_SetChannelPulsePolarity(handle, n, Dcfg.PulsePolarity[n]); // due to Select function  it can be setted up twice
+				}
+			}
+		}	
 	}
 	
-	if (id <16 && fCPol[id]->GetSelected() == 1 ){
-		Dcfg.PulsePolarity[id]  = CAEN_DGTZ_PulsePolarityPositive;
-		printf("Ch[%i] : %s  \n", id, "Positive");
-		ret = CAEN_DGTZ_SetChannelPulsePolarity(handle, id, Dcfg.PulsePolarity[id]);
-	}
-	
+	// number samples for baseline 
 	if (id >=16 && id <32){
-		Dcfg.nsbl[id-16] = fCnsbl[id-16]->GetSelected();
-		printf("Ch[%i] nsbl : %i  \n", id-16, fCnsbl[id-16]->GetSelected());
-	}	
+		Dcfg.nsbl[i] = fCnsbl[i]->GetSelected();
+		ret = CAEN_DGTZ_ReadRegister(handle, DPPAlgControlAddress[i], &reg_data);
+				
+		reg_data = ( reg_data & ~(0x700000) ) | (Dcfg.nsbl[i]<<20); // mask to clean and change b22:b20
+						
+ 		ret = CAEN_DGTZ_WriteRegister(handle, DPPAlgControlAddress[i], reg_data);	
+		ret = CAEN_DGTZ_ReadRegister(handle, DPPAlgControlAddress[i], &reg_data);
+		printf(" In  0x%04X: %08X \n", DPPAlgControlAddress[i], reg_data);
+		
+		if (fAll){
+			for (int n = 0; n < N_CH; n++){ 
+				if ( n!=i) {
+					fCnsbl[n]->Select(fCnsbl[i]->GetSelected( ) );
+					Dcfg.nsbl[n]  = Dcfg.nsbl[i];
+				}
+			}
+		}	
+			
+	}
 	
+	// discriminator type 
 	if (id >=48 && id <64){
-		fCdiscr[id-48]->GetSelected() == 0 ? Dcfg.discr[id-48] = CAEN_DGTZ_DPP_DISCR_MODE_LED : Dcfg.discr[id-48] = CAEN_DGTZ_DPP_DISCR_MODE_CFD;
-		printf("Ch[%i] discr : %s \n", id-48, fCdiscr[id-48]->GetSelected() == 0 ? "LED" : "CFD" );
-	}	
+		fCdiscr[i]->GetSelected() == 0 ? Dcfg.discr[i] = CAEN_DGTZ_DPP_DISCR_MODE_LED : Dcfg.discr[i] = CAEN_DGTZ_DPP_DISCR_MODE_CFD;
+		printf("Ch[%i] discr : %s \n", i, fCdiscr[i]->GetSelected() == 0 ? "LED" : "CFD" );
+		ret = CAEN_DGTZ_ReadRegister(handle, DPPAlgControlAddress[i], &reg_data);
+		printf(" Previously in  0x%04X: %08X \n", DPPAlgControlAddress[i], reg_data);
+		Dcfg.discr[i] == CAEN_DGTZ_DPP_DISCR_MODE_CFD ? reg_data |=  (1<<6) : reg_data &=  ~(1<<6);
+		ret = CAEN_DGTZ_WriteRegister(handle, DPPAlgControlAddress[i], reg_data);	
+		ret = CAEN_DGTZ_ReadRegister(handle, DPPAlgControlAddress[i], &reg_data);
+		printf(" In  0x%04X: %08X \n", DPPAlgControlAddress[i], reg_data);
+		
+		if (fAll){
+			for (int n = 0; n < N_CH; n++){ 
+				if ( n!=i) {
+					fCdiscr[n]->Select(fCdiscr[i]->GetSelected( ) );
+					Dcfg.discr[n]  = Dcfg.discr[i];
+					//not necessary due to strange work of "Select" function
+					//ret = CAEN_DGTZ_WriteRegister(handle, DPPAlgControlAddress[n], reg_data);	
+					//ret = CAEN_DGTZ_ReadRegister(handle, DPPAlgControlAddress[n], &reg_data);
+					//printf(" In  0x%04X: %08X \n", DPPAlgControlAddress[n], reg_data);
+				}
+			}
+		}	
+		
+	}
 	
+	//CFD fraction: 0->25%; 1->50%; 2->75%; 3->100% 
+		
 	if (id >=64 && id <80){
-		Dcfg.cfdf[id-64] = fCcfdf[id-64]->GetSelected();
-		printf("Ch[%i] cfdf : %i  \n", id-64, fCcfdf[id-64]->GetSelected()*25 + 25 );
+		Dcfg.cfdf[i] = fCcfdf[i]->GetSelected();
+		ret = CAEN_DGTZ_ReadRegister(handle, CFDSettingsAddress[i], &reg_data);
+		reg_data = (reg_data &~ (0xF00 ) ) | ( Dcfg.cfdf[i] << 8);
+		ret = CAEN_DGTZ_WriteRegister(handle, CFDSettingsAddress[i], reg_data);
+				
+		if (fAll){
+			for (int n = 0; n < N_CH; n++){ 
+				if ( n!=i) {
+					fCcfdf[n]->Select(fCcfdf[i]->GetSelected( ) );
+					Dcfg.cfdf[n]  = Dcfg.cfdf[i];
+				}
+			}
+		}	
 	}	
 	
+	// charge sensitivity 0 - 5;  5fC - 5.12pC
 	if (id >=80 && id <96){
 		Dcfg.csens[id-80] = fCcsens[id-80]->GetSelected();
 		printf("Ch[%i] csens : %i \n", id-80, fCcsens[id-80]->GetSelected());
-	}	
-	
-	ret = SetDPPParameters(handle, Dcfg);
-	for (int i=0;  i <N_CH; i++)
-		if (Dcfg.thr[i] > 4000 )
-			ret = CAEN_DGTZ_WriteRegister(handle, th_add[i], Dcfg.thr[i]);
+		ret = CAEN_DGTZ_ReadRegister(handle, DPPAlgControlAddress[i], &reg_data);
+		printf(" Previously in  0x%04X: %08X \n", DPPAlgControlAddress[i], reg_data);
+		reg_data = (reg_data &~ (0x00000007 ) ) | ( Dcfg.csens[i] << 0); // clean up [b2:0]
+		ret = CAEN_DGTZ_WriteRegister(handle, DPPAlgControlAddress[i], reg_data);
+		ret = CAEN_DGTZ_ReadRegister(handle, DPPAlgControlAddress[i], &reg_data);
+		printf(" In  0x%04X: %08X \n", DPPAlgControlAddress[i], reg_data);
 		
+		
+		if (fAll){
+			for (int n = 0; n < N_CH; n++){ 
+				if ( n!=i) {
+					fCcsens[n]->Select(fCcsens[i]->GetSelected( ) );
+					Dcfg.csens[n]  = Dcfg.csens[i];
+				}
+			}
+		}
+	}	
+			
 }
 
 void ParamsMenu::TryToClose()
