@@ -489,8 +489,12 @@ void MainFrame::ShowStats( ){
 			
 			CurrentTime = get_time();
         	ElapsedTime = CurrentTime - PrevRateTime;
-			sprintf(CName,"ShowTime: %li s",  (CurrentTime - Rcfg.StartTime) / 1000 );
+			
+			if (ElapsedTime > 1000) {
+				sprintf(CName,"ShowTime: %li s",  (CurrentTime - Rcfg.StartTime) / 1000 );
 				printf("%s \n", CName);
+			}	
+			gSystem->ProcessEvents(); 
 				/*
 			if (ElapsedTime > 1000) { // 1000 - 1 sec
 				sprintf(CName,"T: %li s",  (CurrentTime - Rcfg.StartTime) / 1000 );
