@@ -729,7 +729,7 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 	
 char CName[100];
 	
-	//PrevRateTime = get_time();
+	PrevRateTime = get_time();
 	//double ampl[N_CH];
 		
 	while(Rcfg.loop == 1) {
@@ -740,8 +740,7 @@ char CName[100];
         	CurrentTime = get_time();
         	ElapsedTime = CurrentTime - PrevRateTime;
 
-        	
-        	//if (ElapsedTime > (fNumericEntries[3]->GetNumber()*1000)) { // 1000
+				        	
 			if (ElapsedTime > 1000) { // 1000
 				sprintf(CName,"T: %li s",  (CurrentTime - Rcfg.StartTime) / 1000 );
 				printf("%s \n", CName);
@@ -768,7 +767,7 @@ char CName[100];
 						//Rcfg.TrgCnt[ch] = 0;
 					}
 					printf("No data...\n");
-                	//if (ret == CAEN_DGTZ_Timeout) printf ("Timeout...\n"); else printf("No data...\n");
+                	
 				}
 									
             	else{

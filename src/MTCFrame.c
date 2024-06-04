@@ -455,7 +455,7 @@ void MainFrame::StartButton()
 	
 	Rcfg.loop = 1;
 	
-	//ShowStats( );
+	ShowStats( );
 	
 	//ret = CAEN_DGTZ_SWStartAcquisition(handle);
 		
@@ -489,7 +489,9 @@ void MainFrame::ShowStats( ){
 			
 			CurrentTime = get_time();
         	ElapsedTime = CurrentTime - PrevRateTime;
-			        	        	
+			sprintf(CName,"ShowTime: %li s",  (CurrentTime - Rcfg.StartTime) / 1000 );
+				printf("%s \n", CName);
+				/*
 			if (ElapsedTime > 1000) { // 1000 - 1 sec
 				sprintf(CName,"T: %li s",  (CurrentTime - Rcfg.StartTime) / 1000 );
 				printf("%s \n", CName);
@@ -530,11 +532,13 @@ void MainFrame::ShowStats( ){
             PrevRateTime = CurrentTime;
 			gSystem->ProcessEvents(); 
         	}
+			*/
 		// Calculate throughput and trigger rate (every second) 
 		
-			if (ElapsedTime>=Rcfg.DrawTime*1000 && Rcfg.Nev!=0)	
-				DrawHisto(Histo, N_CH);	
+			//if (ElapsedTime>=Rcfg.DrawTime*1000 && Rcfg.Nev!=0)	
+			//	DrawHisto(Histo, N_CH);	
 		}
+		
 }
 
 void MainFrame::HandleMenu(Int_t id)
