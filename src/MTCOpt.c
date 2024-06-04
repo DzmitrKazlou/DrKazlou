@@ -172,7 +172,11 @@ void OptMenu::DoSetVal()
 	Histo.WF_YMIN = fNumericEntriesOpt[3][2]->GetNumber();	
 	Histo.WF_YMAX = fNumericEntriesOpt[3][3]->GetNumber();
 	
-   
+	Histo.trace[0]->GetXaxis()->SetRangeUser(Histo.WF_XMIN, Histo.WF_XMAX);
+	Histo.trace[0]->GetXaxis()->SetTitle(" Time, ns");
+	Histo.trace[0]->GetYaxis()->SetRangeUser(Histo.WF_YMIN, Histo.WF_YMAX);
+	Histo.trace[0]->GetYaxis()->SetTitleOffset(1.1);
+	Histo.trace[0]->GetYaxis()->SetTitle(" Channels, lbs"); 
 }
 
 void OptMenu::DoCheckBox(){

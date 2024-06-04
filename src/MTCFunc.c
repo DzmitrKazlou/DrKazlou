@@ -46,9 +46,9 @@ long get_time()
     return time_ms;
 }
 
-void CalcRate(int N_CH, uint64_t &PrevRateTime, uint64_t &ElapsedTime){
+void CalcRate(int N_CH, uint64_t &PrevRateTime){
 	char CName[100];
-	uint64_t CurrentTime;
+	uint64_t CurrentTime, ElapsedTime;
 			CurrentTime = get_time();
         	ElapsedTime = CurrentTime - PrevRateTime;
 					        	
@@ -656,8 +656,16 @@ void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH){
 		sprintf(str, "h_integral%i", i);
 		Histo->integral[i]= new TH1D(str, str, 100000, 0, 100000);
 		
+		Histo->trace[i]->SetLineColor(color[i]);
+		Histo->ampl[i]->SetLineColor(color[i]);
+		Histo->integral[i]->SetLineColor(color[i]);
 	}
-
+	
+	Histo->trace[0]->GetXaxis( )->SetRangeUser(Histo->WF_XMIN, Histo->WF_XMAX);
+	Histo->trace[0]->GetXaxis( )->SetTitle(" Time, ns");
+	Histo->trace[0]->GetYaxis( )->SetRangeUser(Histo->WF_YMIN, Histo->WF_YMAX);
+	Histo->trace[0]->GetYaxis( )->SetTitleOffset(1.1);
+	Histo->trace[0]->GetYaxis( )->SetTitle(" Channels, lbs"); 
 }
 
 ////
@@ -668,40 +676,25 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 	//c1->Modified();
 	
 	c1->cd(1);
-	
-	for (int ch=0; ch<N_CH; ch++){
-		Histo.trace[ch]->SetLineColor(color[ch]);
-		if (ch == 0){
-			Histo.trace[ch]->Draw("HIST");
-			Histo.trace[ch]->GetXaxis()->SetRangeUser(Histo.WF_XMIN, Histo.WF_XMAX);
+		for (int ch=0; ch<N_CH; ch++)
+			Histo.trace[ch]->Draw(ch == 0 ? "HIST" : "HIST SAME");
+		/*
+		Histo.trace[ch]->GetXaxis()->SetRangeUser(Histo.WF_XMIN, Histo.WF_XMAX);
 			Histo.trace[ch]->GetXaxis()->SetTitle(" Time, ns");
 			Histo.trace[ch]->GetYaxis()->SetRangeUser(Histo.WF_YMIN, Histo.WF_YMAX);
 			Histo.trace[ch]->GetYaxis()->SetTitleOffset(1.1);
 			Histo.trace[ch]->GetYaxis()->SetTitle(" Channels, lbs"); 
-		}
-	else
-		Histo.trace[ch]->Draw("SAME HIST");
-	}
-	
+		*/
+		
 	c1->cd(2);
-		for (int ch=0; ch<N_CH; ch++){
-			Histo.ampl[ch]->SetLineColor(color[ch]);
-			if (ch	== 0)
-				Histo.ampl[ch]->Draw("HIST");
-			else
-				Histo.ampl[ch]->Draw("HIST SAME");	
+		for (int ch=0; ch<N_CH; ch++)
+			Histo.ampl[ch]->Draw(ch == 0 ? "HIST" : "HIST SAME");
 			
-		}	
 		
 	c1->cd(3);
-		for (int ch=0; ch<N_CH; ch++){
-			Histo.integral[ch]->SetLineColor(color[ch]);
-			if (ch	== 0)
-				Histo.integral[ch]->Draw("HIST");
-			else
-				Histo.integral[ch]->Draw("HIST SAME");	
-			
-		}		
+		for (int ch=0; ch<N_CH; ch++)
+			Histo.integral[ch]->Draw(ch == 0 ? "HIST" : "HIST SAME");
+	
 	
 	c1->Update( );
 }
@@ -776,12 +769,12 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 	//uint64_t CurrentTime, PrevRateTime, ElapsedTime;
 	uint32_t BufferSize, NumEvents[MAX_CH];	
 
-	uint64_t ElapsedTime, PrevRateTime = get_time(), PrevDrawTime, CurrentTime;
+	uint64_t PrevRateTime = get_time(), PrevDrawTime;
 	//double ampl[N_CH];
 		
 	while(Rcfg.loop == 1) {
 		// Calculate throughput and trigger rate (every second) 		
-		CalcRate(N_CH, PrevRateTime, ElapsedTime);			   
+		CalcRate(N_CH, PrevRateTime);			   
 	  		   
 		ret = CAEN_DGTZ_ReadData(handle,CAEN_DGTZ_SLAVE_TERMINATED_READOUT_MBLT, buffer, &BufferSize); // Read the buffer from the digitizer 
 		if (ret) {
@@ -825,12 +818,11 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 					Rcfg.TrgCnt[ch]++;
 					
 					Double_t a_val;
-					//FillHisto(ch, a_val, Events[ch][ev].TimeTag); // all data performance
-					FillHisto(ch, Histo, a_val);
+					
+					FillHisto(ch, Histo, a_val); // all data performance
 					if (Rcfg.fPrint)
 						printf(" FillHisto CH[%i] Ev[%i] Nev %i ampl %f \n", ch, ev, Rcfg.Nev, a_val );			
-					//printf(" Print CH[%i] Ev[%i] Nev %i \n", ch, ev, Nev );			
-				   					
+									   					
 					gSystem->ProcessEvents(); 
 				} // events loop
 	
@@ -842,9 +834,7 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 		}// channels loop
 						
 		
-		//if (ElapsedTime>=(fNumericEntries[2]->GetNumber()*1000) && Nev!=0)//&& i==0 ) // sec*1000 = ms // DrawTime = fNumericEntries[6]->GetNumber()
-		//CurrentTime = get_time();	
-		if ((get_time() - PrevDrawTime) >= Rcfg.DrawTime*1000 && Rcfg.Nev!=0){	
+		if ( (get_time() - PrevDrawTime) >= Rcfg.DrawTime*1000 && Rcfg.Nev!=0){	
 			DrawHisto(*Histo, N_CH);	
 			PrevDrawTime = get_time();
 		}	
