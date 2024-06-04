@@ -776,7 +776,7 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 	//uint64_t CurrentTime, PrevRateTime, ElapsedTime;
 	uint32_t BufferSize, NumEvents[MAX_CH];	
 
-	uint64_t ElapsedTime, PrevRateTime = get_time();
+	uint64_t ElapsedTime, PrevRateTime = get_time(), PrevDrawTime, CurrentTime;
 	//double ampl[N_CH];
 		
 	while(Rcfg.loop == 1) {
@@ -840,12 +840,14 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 			} // check enabled channels
 			
 		}// channels loop
-		
-				
+						
 		
 		//if (ElapsedTime>=(fNumericEntries[2]->GetNumber()*1000) && Nev!=0)//&& i==0 ) // sec*1000 = ms // DrawTime = fNumericEntries[6]->GetNumber()
-		if (ElapsedTime>=Rcfg.DrawTime*1000 && Rcfg.Nev!=0)	
+		//CurrentTime = get_time();	
+		if ((get_time() - PrevDrawTime) >= Rcfg.DrawTime*1000 && Rcfg.Nev!=0){	
 			DrawHisto(*Histo, N_CH);	
+			PrevDrawTime = get_time();
+		}	
 		
 		if (Rcfg.fPrint)
 			printf(" ---------------------------------------- \n");			
