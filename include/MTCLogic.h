@@ -66,9 +66,9 @@ private:
 	TGHorizontalFrame    *fHF0couple, *fHF0board, *fHFcouple[8], *fHFboard[8];
 	
 	
-	TGCheckButton *fCcouple[8][8], *fCboard[8][12];	
+	TGCheckButton *fCcouple[8][8], *fCboard[8][14], *fCTrgIn[8];	
 		
-   TGLabel              *fLabel[2][12];
+   TGLabel              *fLabel[2][14];
    
    TGNumberEntry        *fNumericEntries[16][16];
    

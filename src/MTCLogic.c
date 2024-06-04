@@ -4,7 +4,7 @@
 extern int N_CH;
 extern uint32_t log_val[2][8];
 extern int handle;
-//extern CAEN_DGTZ_ErrorCode ret;
+extern CAEN_DGTZ_ErrorCode ret;
 
 	
 	
@@ -17,7 +17,7 @@ LogicMenu::LogicMenu(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h
 {
 		
 	char titlelabel[10], str[20];
-	int b[2] = {8, 12}; // bit for coinc logic  in couple | board
+	int b[2] = {7, 13}; // bit for coinc logic  in couple | board
 	
    fMain = new TGTransientFrame(p, main, w, h, options);
    fMain->Connect("CloseWindow()", "LogicMenu", this, "CloseWindow()");
@@ -57,16 +57,14 @@ LogicMenu::LogicMenu(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h
 		sprintf(str, "b%i", i);	
 		fLabel[1][i] = new TGLabel(fHF0board, str);
 		fLabel[1][i]->SetTextFont(labelFont);
-		if (i == 0)
-			fHF0board->AddFrame(fLabel[1][i], new TGLayoutHints(kLHintsRight | kLHintsCenterY, 0, 0, 2, 2)); // left right top bottom
+		if (i == 12)
+			fHF0board->AddFrame(fLabel[1][i], new TGLayoutHints(kLHintsRight | kLHintsCenterY, 70, 0, 2, 2)); // left right top bottom
 		else
 			fHF0board->AddFrame(fLabel[1][i], new TGLayoutHints(kLHintsRight | kLHintsCenterY, 2, 2, 2, 2));
 	}				
 	
 	fHF0board->Resize();
-	
-	
-		
+			
 	for (int i = 0; i<(int)(N_CH/2); i++){
 		sprintf(str, "CH%i-CH%i", 2*i, 2*i+1);	
 		fGF[0][i] = new TGGroupFrame(f1, str, kVerticalFrame);
@@ -87,7 +85,7 @@ LogicMenu::LogicMenu(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h
 				fCcouple[i][j]->SetState(kButtonDown); 
 			else
 				fCcouple[i][j]->SetState(kButtonUp); 
-			fCcouple[i][j]->GetState( ) == kButtonDown ? log_val[0][i] |= (1<<j) : log_val[0][i] &= ~(1<<j); 
+			//fCcouple[i][j]->GetState( ) == kButtonDown ? log_val[0][i] |= (1<<j) : log_val[0][i] &= ~(1<<j); 
 			fCcouple[i][j]->Connect("Clicked()", "LogicMenu", this, "DoCheckBox()");
 			fHFcouple[i]->AddFrame(fCcouple[i][j], new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 2, 2, 4, 4));
 		}
@@ -99,19 +97,26 @@ LogicMenu::LogicMenu(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h
 		fTEntries[0][i]->Resize(40, fTEntries[0][i]->GetDefaultHeight());
 		fTEntries[0][i]->SetFont(paramFont);
 		fHFcouple[i]->AddFrame(fTEntries[0][i], new TGLayoutHints(kLHintsRight | kLHintsCenterY,  5, 0, 3, 3) ); //kLHintsCenterY | kLHintsLeft  //new TGLayoutHints(0, 0, 0, 4, 4)
-				
+		
+		fCTrgIn[i] = new TGCheckButton(fHFboard[i], "TRG-IN", i + 200);	
+		if (log_val[1][i] & (1<<30))
+				fCTrgIn[i]->SetState(kButtonDown); 
+			else
+				fCTrgIn[i]->SetState(kButtonUp); 
+		fCTrgIn[i]->Connect("Clicked()", "LogicMenu", this, "DoCheckBox()");
+		fHFboard[i]->AddFrame(fCTrgIn[i], new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 2, 2, 2, 2));
+		
 		for (int j=b[1]-1; j>=0; j--){	
 			fCboard[i][j] = new TGCheckButton(fHFboard[i], "", i * b[1] + j+100);	
 			if (log_val[1][i] & (1<<j))
 				fCboard[i][j]->SetState(kButtonDown); 
 			else
 				fCboard[i][j]->SetState(kButtonUp); 
-			fCboard[i][j]->GetState( ) == kButtonDown ? log_val[1][i] |= (1<<j) : log_val[1][i] &= ~(1<<j); 
-			
+			//fCboard[i][j]->GetState( ) == kButtonDown ? log_val[1][i] |= (1<<j) : log_val[1][i] &= ~(1<<j); 
 			fCboard[i][j]->Connect("Clicked()", "LogicMenu", this, "DoCheckBox()");
-			if (j==11)
+			if (j == 12)
 				fHFboard[i]->AddFrame(fCboard[i][j], new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 10, 6, 4, 4));
-			else if (j==10)
+			else if (j == 11 || j == 10)
 				fHFboard[i]->AddFrame(fCboard[i][j], new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 5, 8, 4, 4));
 			else 
 				fHFboard[i]->AddFrame(fCboard[i][j], new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 3, 3, 4, 4));
@@ -138,19 +143,24 @@ LogicMenu::LogicMenu(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h
 	hframe1->Resize();
 	vframe1->AddFrame(hframe1, new TGLayoutHints(kLHintsTop, 2, 2 , 2, 2) );
 	
-	TGHorizontalFrame *hframe2 = new TGHorizontalFrame(fMain, 200, 40); 
- 	fSetButton = new TGTextButton(hframe2," S&et ", 1);
+	TGHorizontalFrame *hframe2 = new TGHorizontalFrame(fMain, 450, 60); 
+ 	TGLabel *cInfo = new TGLabel(hframe2, "[b1:b0]  00|01|10|11 \n  AND|EVEN|ODD|OR \n[b2] Enable [b1:b0] \n[b5:b4] 01: val0=val1=mb signal \n 10: val0=val1=trg0 AND trg1 \n[b6] Enable [b5:b4]");
+	hframe2->AddFrame(cInfo, new TGLayoutHints(kLHintsLeft | kLHintsCenterY , 2, 102, 2, 2)); //|  kLHintsExpandX
+	
+	fSetButton = new TGTextButton(hframe2," S&et ", 1);
 	fSetButton->SetFont(sFont);
-    fSetButton->Resize(60, 30);
+    fSetButton->Resize(50, 30);
 	fSetButton->Connect("Clicked()","LogicMenu", this, "SetButton()");
-  	hframe2->AddFrame(fSetButton, new TGLayoutHints(kLHintsCenterY |  kLHintsExpandX, 4, 4, 4, 4));
+  	hframe2->AddFrame(fSetButton, new TGLayoutHints(kLHintsCenterY, 4, 4, 4, 4));
 
 	fSwitchOffButton = new TGTextButton(hframe2,"  OFF  ", 1);
     fSwitchOffButton->SetFont(sFont);
     fSwitchOffButton->Resize(50, 30);
 	fSwitchOffButton->Connect("Clicked()","LogicMenu",this,"SwitchOffButton()");	
-    hframe2->AddFrame(fSwitchOffButton, new TGLayoutHints(kLHintsCenterY | kLHintsLeft | kLHintsExpandX, 4, 4, 4, 4));
+    hframe2->AddFrame(fSwitchOffButton, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 4, 4, 4, 4));
 	
+	TGLabel *bInfo = new TGLabel(hframe2, "[b7:b0] trigger from couples \n[b9:b8] 00|01|10 OR|AND|MAJ \n[b12:b10] MAJ \n\t 01 - at least two couples");
+	hframe2->AddFrame(bInfo, new TGLayoutHints(kLHintsLeft | kLHintsCenterY |  kLHintsExpandX, 42, 2, 2, 2));
 		
 	hframe2->Resize();
 	vframe1->AddFrame(hframe2, new TGLayoutHints(kLHintsBottom | kLHintsCenterX,       2, 2, 2, 2));
@@ -197,7 +207,7 @@ void LogicMenu::DoSetVal()
 	TGTextEntry *te = (TGTextEntry *) gTQSender;
 	Int_t id = te->WidgetId();
 	Int_t i, j;
-	int b[2] = {8, 12};
+	int b[2] = {7, 13};
 		
 	if (id < 10){
 		i = 0;
@@ -247,7 +257,7 @@ void LogicMenu::DoCheckBox()
 {
 	TGCheckButton *chb = (TGCheckButton *) gTQSender;
 	Int_t id = chb->WidgetId();
-	Int_t i, j, n, b[2] = {8, 12};
+	Int_t i, j, n, b[2] = {7, 13};
 	char str[10];
 			
 	if (id < 100){
@@ -259,7 +269,8 @@ void LogicMenu::DoCheckBox()
 		printf("%04X \n", log_val[0][i]);	
 		fTEntries[0][i]->SetText(str);
 	}
-	else{
+	
+	if (id >= 100 && id < 200){
 		i = (id - 100) / b[1];
 		j = (id - 100)  % b[1];
 				
@@ -269,15 +280,24 @@ void LogicMenu::DoCheckBox()
 		fTEntries[1][i]->SetText(str);
 	}
 	
+	if (id >= 200){
+		i = (id - 200);
+		j = 30;
+				
+		fCTrgIn[i]->GetState( ) == kButtonDown ? log_val[1][i] |= (1<<j) : log_val[1][i] &= ~(1<<j); 		
+		sprintf(str, "%08X", log_val[1][i]);	
+		printf("%08X \n", log_val[1][i]);	
+		fTEntries[1][i]->SetText(str);
+	}
+	
 	printf("checkbox changed %i i = %i j = %i \n", id, i, j ); 
 	
 }
 
 void LogicMenu::SetButton()
 {
-  int th_add[16] = {0x1060, 0x1160, 0x1260, 0x1360, 0x1460, 0x1560, 0x1660, 0x1760, 0x1860, 0x1960, 0x1A60, 0x1B60, 0x1C60, 0x1D60, 0x1E60, 0x1F60};  
-  
-  //ret = SetLogic(handle, log_val, N_CH);
+    
+  ret = SetLogic(handle, log_val, N_CH);
   
   	
   printf("SetButton \n" ); 
@@ -287,7 +307,7 @@ void LogicMenu::SwitchOffButton()
 {
     //switch off coincidence on board
 	
-	//ret = SwitchOffLogic(handle, N_CH);
+	ret = SwitchOffLogic(handle, N_CH);
 	
 	printf("Coincidence OFF \n" ); 
 }

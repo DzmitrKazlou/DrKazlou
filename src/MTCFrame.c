@@ -314,7 +314,7 @@ void MainFrame::DoCheckBox(){
 void MainFrame::DoSetVal(){
 	
 	N_CH = fNumericEntries[0]->GetNumber();
-
+	Rcfg.DrawTime = fNumericEntries[2]->GetNumber();
 	Histo.fBL = true; //fC[0]->GetState() == kButtonDown ? true : false;
 }
 

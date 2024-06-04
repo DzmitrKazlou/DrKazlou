@@ -88,7 +88,8 @@ CAEN_DGTZ_ErrorCode  SetLogic(int32_t handle, uint32_t reg_val[2][8], int N_CH) 
 																			
  	uint32_t TriggerLatencyAddress[MAX_CH] = { 0x106C, 0x116C, 0x126C, 0x136C, 0x146C, 0x156C, 0x166C, 0x176C,
 																			0x186C, 0x196C, 0x1A6C, 0x1B6C, 0x1C6C, 0x1D6C, 0x1E6C, 0x1F6C};																		
-												 
+	uint32_t ShapedTriggerWidthAddress[MAX_CH] = { 0x1070, 0x1170, 0x1270, 0x1370, 0x1470, 0x1570, 0x1670, 0x1770,
+																			0x1870, 0x1970, 0x1A70, 0x1B70, 0x1C70, 0x1D70, 0x1E70, 0x1F70};															
 	
 	int NCouple = (int)(N_CH/2);
 	
@@ -112,6 +113,15 @@ CAEN_DGTZ_ErrorCode  SetLogic(int32_t handle, uint32_t reg_val[2][8], int N_CH) 
 		printf(" In  0x%04X: %08X \n", CoinceLogicAddress[i], reg_data);
 	}
 	
+	//read shaped trigger width for every channel ~ time window for coincidence
+	for (int i=0; i<N_CH; i++){
+		ret = CAEN_DGTZ_ReadRegister(handle, ShapedTriggerWidthAddress[i], &reg_data);
+		printf(" Previously in  0x%08X: %08X \n", ShapedTriggerWidthAddress[i], reg_data);
+		ret = CAEN_DGTZ_WriteRegister(handle, ShapedTriggerWidthAddress[i], 0x14);	 // 0x14 = 20x8ns = 160 ns window
+		ret = CAEN_DGTZ_ReadRegister(handle, ShapedTriggerWidthAddress[i], &reg_data);
+		printf(" In  0x%04X: %08X \n", ShapedTriggerWidthAddress[i], reg_data);
+	}
+	
 	//set trigger latency for every channel
 	for (int i=0; i<N_CH; i++){
 		ret = CAEN_DGTZ_ReadRegister(handle, TriggerLatencyAddress[i], &reg_data);
@@ -124,19 +134,22 @@ CAEN_DGTZ_ErrorCode  SetLogic(int32_t handle, uint32_t reg_val[2][8], int N_CH) 
 	
 	for (int i=0; i<2; i++)
 		for (int j=0; j<NCouple; j++){
-			printf("log_address[%i][%i] = 0x%04X  log_val[%i][%i] = 0x%04X\n", i, j, log_address[i][j], i, j, reg_val[i][j]);
-			
-			ret = CAEN_DGTZ_ReadRegister(handle, log_address[i][j], &reg_data);
-			printf(" Previously in  0x%08X: %08X \n", log_address[i][j], reg_data);
-			ret = CAEN_DGTZ_WriteRegister(handle, log_address[i][j], reg_val[i][j]);	 
-			ret = CAEN_DGTZ_ReadRegister(handle, log_address[i][j], &reg_data);
-			printf(" In  0x%04X: %08X \n", log_address[i][j], reg_data);
-			
+			if (reg_val[i][j] != 0){
+				printf("log_address[%i][%i] = 0x%04X  log_val[%i][%i] = 0x%04X\n", i, j, log_address[i][j], i, j, reg_val[i][j]);
+				ret = CAEN_DGTZ_ReadRegister(handle, log_address[i][j], &reg_data);
+				printf(" Previously in  0x%04X: %08X \n", log_address[i][j], reg_data);
+				if (i==0){
+				  reg_data = (reg_data & ~0xFF) | reg_val[i][j];
+				}
+				else
+				  reg_data = reg_val[i][j];
+			  
+				ret = CAEN_DGTZ_WriteRegister(handle, log_address[i][j], reg_data);	 
+				ret = CAEN_DGTZ_ReadRegister(handle, log_address[i][j], &reg_data);
+				printf(" In  0x%04X: %08X \n", log_address[i][j], reg_data);
+			}
 		}
-	 
-    //ret = CAEN_DGTZ_ReadRegister(handle, address, &d32);
-    
-    //ret = CAEN_DGTZ_WriteRegister(handle, address, d32);
+	    
     return ret;
 }
 
