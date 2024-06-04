@@ -222,7 +222,7 @@ int iStyle[]	= {0, 0, 2, 0};
 	Rcfg.TLabel->SetTextFont(sFont);
 	Rcfg.TLabel->Resize(200, 30);
 	
-	vframe1->AddFrame(fTLabel, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
+	vframe1->AddFrame(Rcfg.TLabel, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
    	
 	
 	vframe1->Resize();
@@ -240,7 +240,7 @@ int iStyle[]	= {0, 0, 2, 0};
 	Int_t parts[] = {6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 16};
 	Rcfg.StatusBar = new TGStatusBar(fMain, 100, 20, kHorizontalFrame); //kHorizontalFrame //kSunkenFrame
 	Rcfg.StatusBar->SetParts(parts, 15);
-	fMain->AddFrame(fStatusBar, new TGLayoutHints(kLHintsBottom | kLHintsLeft | kLHintsExpandX, 0, 0, 2, 0));
+	fMain->AddFrame(Rcfg.StatusBar, new TGLayoutHints(kLHintsBottom | kLHintsLeft | kLHintsExpandX, 0, 0, 2, 0));
 	
 	
 	TGHorizontalFrame *hframe2 = new TGHorizontalFrame(fMain, 200, 40);
