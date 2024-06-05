@@ -650,6 +650,7 @@ void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH){
 	Histo->ALBound = 0, Histo->ARBound = RecordLength[0] * b_width;
 	Histo->ILBound = 0, Histo->IRBound = RecordLength[0] * b_width;
 	Histo->fBL = true;
+	Histo->fTrace = true;
 	
 	for (int i=0; i<N_CH; i++){
 		sprintf(str,"h_trace%i", i);
@@ -665,6 +666,8 @@ void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH){
 		
 		Histo->fDraw[i] = true;
 	}
+	
+	Histo->FirstToDraw = 0;
 	
 	Histo->trace[0]->GetXaxis( )->SetRangeUser(Histo->WF_XMIN, Histo->WF_XMAX);
 	Histo->trace[0]->GetXaxis( )->SetTitle(" Time, ns");
@@ -682,10 +685,10 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 	
 	if (Histo.fTrace){
 		c1->cd(1);
-		for (int ch = Histo.FirstToDraw( ); ch<N_CH; ch++){
+		for (int ch = Histo.FirstToDraw; ch<N_CH; ch++){
 			if ( Histo.fDraw[ch] ){
-				Histo.trace[ch]->Draw(ch == 0 ? "HIST" : "HIST SAME");
-				if (ch == 0)
+				Histo.trace[ch]->Draw(ch == Histo.FirstToDraw ? "HIST" : "HIST SAME");
+				if (ch == Histo.FirstToDraw)
 					Histo.trace[ch]->GetYaxis()->SetRangeUser(Histo.WF_YMIN, Histo.WF_YMAX);
 			}
 		}
@@ -693,16 +696,16 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 		
 	if (Histo.fAmpl){		
 		c1->cd(2);
-		for (int ch = Histo.FirstToDraw( ); ch<N_CH; ch++)
+		for (int ch = Histo.FirstToDraw; ch<N_CH; ch++)
 			if (Histo.fDraw[ch])
-				Histo.ampl[ch]->Draw(ch == 0 ? "HIST" : "HIST SAME");
+				Histo.ampl[ch]->Draw(ch == Histo.FirstToDraw ? "HIST" : "HIST SAME");
 	}
 	
 	if (Histo.fInt){	
 		c1->cd(3);
-		for (int ch = Histo.FirstToDraw( ); ch<N_CH; ch++)
+		for (int ch = Histo.FirstToDraw; ch<N_CH; ch++)
 			if (Histo.fDraw[ch])
-				Histo.integral[ch]->Draw(ch == 0 ? "HIST" : "HIST SAME");
+				Histo.integral[ch]->Draw(ch == Histo.FirstToDraw ? "HIST" : "HIST SAME");
 	}
 	
 	c1->Update( );

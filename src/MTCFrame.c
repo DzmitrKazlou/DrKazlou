@@ -318,6 +318,12 @@ void MainFrame::DoCheckBox(){
 	
 	if (id < MAX_CH ) {
 		Histo.fDraw[id] = fCa[id]->GetState() == kButtonDown ? true : false;
+		
+		int n = MAX_CH;
+		for (int i = 0; i<MAX_CH; i++)
+			if (Histo.fDraw[i] && i<n) 
+				n = i;
+		Histo.FirstToDraw = n;
 	}
    
    if ( id > 40 ) {

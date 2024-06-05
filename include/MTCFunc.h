@@ -76,15 +76,8 @@ typedef struct
 	
 	char h2Style[10];
 	bool fDraw[MAX_CH]; // channel draw flag
-	//int FirstToDraw; //first channel to draw
-		int FirstToDraw( ){
-			int n = MAX_CH;
-			for (int i = 0; i<MAX_CH; i++)
-				if (fDraw[i] && i<n) 
-					n = i;
-			return n;
-		}
-		
+	int FirstToDraw; //first channel to draw
+			
 	bool fBL, fTrace, fCharge, fAmpl, fInt, fdT, fPSD_ampl, fPSD_int, fQsl, fIA, fLayers, fLayersCoeff, fCounts, fXY, fRubik;  // flags for every time of histograms
 		
 	TH1D *trace[MAX_CH];
