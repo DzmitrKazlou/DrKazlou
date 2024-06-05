@@ -188,7 +188,7 @@ int iStyle[]	= {0, 0, 2, 0, 0};
 	gframe_hist->SetTitlePos(TGGroupFrame::kRight); 
 	vframe1->AddFrame(gframe_hist, new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 5, 5, 5));//
 
-	const char *cblabel[] = {"BL_CUT", "TRACES", "ChargeL", "AMPL_HIST", "INTEGRAL", "dT", "PSD_ampl", "PSD_int", "Qsl", "Int vs Ampl", "Layers", "Counts", "XY", "Rubik",};	
+	const char *cblabel[] = {"BL_CUT", "TRACES", "AMPL_HIST", "ChargeL", "INTEGRAL", "dT", "PSD_ampl", "PSD_int", "Qsl", "Int vs Ampl", "Layers", "Counts", "XY", "Rubik",};	
 		
 	for (int i = 0; i < 14; i++) {
 		if ( i!=10 ){
@@ -210,6 +210,7 @@ int iStyle[]	= {0, 0, 2, 0, 0};
 	
 	fC[0]->SetState(kButtonDown); //BL_CUT ON
 	fC[1]->SetState(kButtonDown); //TRACES ON
+	Histo.NPad = 1;
 		
 	gframe_hist->Resize();
 	 
@@ -241,7 +242,8 @@ int iStyle[]	= {0, 0, 2, 0, 0};
 
 	
    fMain->AddFrame(hframe1, new TGLayoutHints(kLHintsCenterX, 2, 2, 2, 2) );
-	
+   
+	c1 = fEcanvas1->GetCanvas( );
 		
 	// status bar
 	
@@ -326,11 +328,13 @@ void MainFrame::DoCheckBox(){
 		Histo.FirstToDraw = n;
 	}
    
-   if ( id > 40 ) {
-		Histo.fBL = fC[0]->GetState() == kButtonDown ? true : false; 
+   if (id == 41)
+	   Histo.fBL = fC[0]->GetState() == kButtonDown ? true : false; 
+   
+   if ( id > 41 ) {
 		Histo.fTrace = fC[1]->GetState() == kButtonDown ? true : false;
-		Histo.fCharge = fC[2]->GetState() == kButtonDown ? true : false;
-		Histo.fAmpl = fC[3]->GetState() == kButtonDown ? true : false;
+		Histo.fAmpl = fC[2]->GetState() == kButtonDown ? true : false;
+		Histo.fCharge = fC[3]->GetState() == kButtonDown ? true : false;
 		Histo.fInt = fC[4]->GetState() == kButtonDown ? true : false;
 		Histo.fdT = fC[5]->GetState() == kButtonDown ? true : false;
 		Histo.fPSD_ampl = fC[6]->GetState() == kButtonDown ? true : false;
@@ -342,6 +346,39 @@ void MainFrame::DoCheckBox(){
 		Histo.fCounts = fC[11]->GetState() == kButtonDown ? true : false;
 		Histo.fXY = fC[12]->GetState() == kButtonDown ? true : false;
 		Histo.fRubik = fC[13]->GetState() == kButtonDown ? true : false;
+		
+		fC[id-41]->GetState() == kButtonDown ? Histo.NPad++ : Histo.NPad-- ;
+		
+		if (Histo.fAmpl)
+			Histo.cAmpl = 1 + (Histo.fTrace ? 1 : 0);
+		
+		if (Histo.fCharge)	
+			Histo.cCharge = 1 + (Histo.fTrace ? 1 : 0) + (Histo.fAmpl ? 1 : 0);
+			
+		if (Histo.fInt)
+			Histo.cInt = 1 + (Histo.fTrace ? 1 : 0) + (Histo.fCharge ? 1 : 0) + (Histo.fAmpl ? 1 : 0);
+		
+		c1->Clear( );
+		c1->SetGrid( );
+		
+		if (Histo.NPad == 1)
+			c1->Divide(1, 1, 0.001, 0.001);
+		if (Histo.NPad == 2)
+			c1->Divide(2, 1, 0.001, 0.001);
+		if (Histo.NPad > 2 && Histo.NPad < 5)
+			c1->Divide(2, 2, 0.001, 0.001);
+		if (Histo.NPad > 4 && Histo.NPad < 7)
+			c1->Divide(3, 2, 0.001, 0.001);
+		if (Histo.NPad > 6 && Histo.NPad < 10)
+			c1->Divide(3, 3, 0.001, 0.001);
+		if (Histo.NPad > 9 && Histo.NPad < 13)
+			c1->Divide(4, 3, 0.001, 0.001);
+		if (Histo.NPad > 12)
+			c1->Divide(4, 4, 0.001, 0.001);
+		
+		c1->Modified();
+		c1->Update( );
+		printf(" id %i NPad %i cAmpl %i cCharge %i cInt %i \n", id, Histo.NPad, Histo.cAmpl, Histo.cCharge, Histo.cInt );
    }	
    
 }
@@ -392,12 +429,7 @@ void MainFrame::InitButton()
         new TGMsgBox(gClient->GetRoot(), fMain, "Error", "Can't allocate memory buffers\n", kMBIconStop, kMBOk);
         ret = QuitMain(handle, buffer, (void**)&Events, Waveforms);
     }
-	
-	
-	c1 = fEcanvas1->GetCanvas( );
-	c1->Divide(2, 2, 0.001, 0.001);
-	c1->Modified();
-		
+			
 	//enable buttons after DIGI initialisation
 	fClearButton->SetState (kButtonUp);
 	fStartButton->SetState (kButtonUp);
@@ -448,7 +480,8 @@ void MainFrame::ClearHisto()
 //	ec_out = 0;
 	
 	//ret = CAEN_DGTZ_ClearData(handle); // WHAT DOES IT DO? - only crashes
-	
+	c1->Modified( );
+	c1->Update( );
 	printf("ClearHisto \n");
 	
 	

@@ -668,6 +668,7 @@ void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH){
 	}
 	
 	Histo->FirstToDraw = 0;
+	Histo->NPad = 1;
 	
 	Histo->trace[0]->GetXaxis( )->SetRangeUser(Histo->WF_XMIN, Histo->WF_XMAX);
 	Histo->trace[0]->GetXaxis( )->SetTitle(" Time, ns");
@@ -695,14 +696,14 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 	}	
 		
 	if (Histo.fAmpl){		
-		c1->cd(2);
+		c1->cd(Histo.cAmpl);
 		for (int ch = Histo.FirstToDraw; ch<N_CH; ch++)
 			if (Histo.fDraw[ch])
 				Histo.ampl[ch]->Draw(ch == Histo.FirstToDraw ? "HIST" : "HIST SAME");
 	}
 	
 	if (Histo.fInt){	
-		c1->cd(3);
+		c1->cd(Histo.cInt);
 		for (int ch = Histo.FirstToDraw; ch<N_CH; ch++)
 			if (Histo.fDraw[ch])
 				Histo.integral[ch]->Draw(ch == Histo.FirstToDraw ? "HIST" : "HIST SAME");
