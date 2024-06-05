@@ -87,7 +87,7 @@ typedef struct
 	TH1D *trace[MAX_CH], *ampl[MAX_CH], *integral[MAX_CH], *charge[MAX_CH];
 	TH2D *int_ampl, *psd_ampl, *psd_int, *qs_ql; 
 		
-	int PSD_BIN = 2;
+	int PSD_BIN;
 		
 } Histograms_t;
 

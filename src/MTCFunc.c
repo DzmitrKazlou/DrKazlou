@@ -672,6 +672,7 @@ void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH){
 	Histo->FirstToDraw = 0;
 	Histo->NPad = 1;
 	Histo->CH_2D = 0;
+	Histo->PSD_BIN = 2;
 	
 	Histo->trace[0]->GetXaxis( )->SetRangeUser(Histo->WF_XMIN, Histo->WF_XMAX);
 	Histo->trace[0]->GetXaxis( )->SetTitle(" Time, ns");
@@ -695,8 +696,7 @@ void DrawTH2D(bool flag, TH2D *h, int cPos, char *opt){
 		h->SetMarkerStyle(21);
 		h->SetMarkerSize(0.4);
 		h->SetMarkerColor(kBlue);
-		//printf(" Draw options [%s]\n", opt);
-		h->Draw("AP");
+		h->Draw(opt);
 	}		
 	
 }
@@ -734,10 +734,11 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 				Histo.charge[ch]->Draw(ch == Histo.FirstToDraw ? "HIST" : "HIST SAME");
 	}
 	
-	//DrawTH2D(Histo.fIA, Histo.int_ampl, Histo.cIA, Histo.h2Style);//Histo.h2Style
-	//DrawTH2D(Histo.fPSD_ampl, Histo.psd_ampl, Histo.cPSD_ampl, Histo.h2Style);
-	//DrawTH2D(Histo.fPSD_int, Histo.psd_int, Histo.cPSD_int, Histo.h2Style);
-	//DrawTH2D(Histo.fQsl, Histo.qs_ql, Histo.cQsl, Histo.h2Style);
+	DrawTH2D(Histo.fIA, Histo.int_ampl, Histo.cIA, Histo.h2Style);//Histo.h2Style
+	DrawTH2D(Histo.fPSD_ampl, Histo.psd_ampl, Histo.cPSD_ampl, Histo.h2Style);
+	DrawTH2D(Histo.fPSD_int, Histo.psd_int, Histo.cPSD_int, Histo.h2Style);
+	DrawTH2D(Histo.fQsl, Histo.qs_ql, Histo.cQsl, Histo.h2Style);
+	/*
 	if (Histo.fIA){
 		c1->cd(Histo.cIA);
 		Histo.int_ampl->SetMarkerStyle(21);
@@ -769,6 +770,7 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 		Histo.qs_ql->SetMarkerColor(kBlue);
 		Histo.qs_ql->Draw(" ");
 	}	
+	*/
 	
 	c1->Update( );
 }
