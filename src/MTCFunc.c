@@ -734,9 +734,9 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 				Histo.charge[ch]->Draw(ch == Histo.FirstToDraw ? "HIST" : "HIST SAME");
 	}
 	
-	DrawTH2D(Histo.fIA, Histo.int_ampl, Histo.cIA, Histo.h2Style);
+	DrawTH2D(Histo.fIA, Histo.int_ampl, Histo.cIA, (char*)"");//Histo.h2Style
 	DrawTH2D(Histo.fPSD_ampl, Histo.psd_ampl, Histo.cPSD_ampl, Histo.h2Style);
-	DrawTH2D(Histo.fPSD_int, Histo.psd_int, Histo.cPSD_int, Histo.h2Style);
+	DrawTH2D(Histo.fPSD_int, Histo.psd_int, Histo.cPSD_int, (char*)"AP");
 	DrawTH2D(Histo.fQsl, Histo.qs_ql, Histo.cQsl, Histo.h2Style);
 	
 	c1->Update( );
@@ -818,6 +818,9 @@ void FillHisto(int ch,  uint32_t ev, Histograms_t *Histo, double &ampl){
 		if (Histo->fIA && ch == Histo->CH_2D)
 			Histo->int_ampl->Fill(ampl, integral);
 		
+		if(Rcfg.fPrint)
+			printf(" ev[%i]  ch[%i] ampl %f Qs %f Ql %f  PSD %f \n", ev, ch, ampl, Qs, Ql, psd_val);
+		
 		vec.clear();
 		vec_bl.clear();
 }
@@ -881,8 +884,7 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 					Double_t a_val;
 					
 					FillHisto(ch, ev, Histo, a_val); // all data performance
-					if (Rcfg.fPrint)
-						printf(" FillHisto CH[%i] Ev[%i] Nev %i ampl %f \n", ch, ev, Rcfg.Nev, a_val );			
+					
 									   					
 					gSystem->ProcessEvents(); 
 				} // events loop
