@@ -695,8 +695,8 @@ void DrawTH2D(bool flag, TH2D *h, int cPos, char *opt){
 		h->SetMarkerStyle(21);
 		h->SetMarkerSize(0.4);
 		h->SetMarkerColor(kBlue);
-		printf(" Draw options [%s]\n", opt);
-		h->Draw(opt);
+		//printf(" Draw options [%s]\n", opt);
+		h->Draw("");
 	}		
 	
 }
@@ -734,9 +734,9 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 				Histo.charge[ch]->Draw(ch == Histo.FirstToDraw ? "HIST" : "HIST SAME");
 	}
 	
-	DrawTH2D(Histo.fIA, Histo.int_ampl, Histo.cIA, (char*)"");//Histo.h2Style
+	DrawTH2D(Histo.fIA, Histo.int_ampl, Histo.cIA, Histo.h2Style);//Histo.h2Style
 	DrawTH2D(Histo.fPSD_ampl, Histo.psd_ampl, Histo.cPSD_ampl, Histo.h2Style);
-	DrawTH2D(Histo.fPSD_int, Histo.psd_int, Histo.cPSD_int, (char*)"AP");
+	DrawTH2D(Histo.fPSD_int, Histo.psd_int, Histo.cPSD_int, Histo.h2Style);
 	DrawTH2D(Histo.fQsl, Histo.qs_ql, Histo.cQsl, Histo.h2Style);
 	
 	c1->Update( );
