@@ -658,10 +658,13 @@ void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH){
 		Histo->ampl[i]= new TH1D(str, str, 16384, 0, 16384);
 		sprintf(str, "h_integral%i", i);
 		Histo->integral[i]= new TH1D(str, str, 100000, 0, 100000);
+		sprintf(str, "h_charge%i", i);
+		Histo->charge[i]= new TH1D(str, str, 1000, 0, 65536);
 		
 		Histo->trace[i]->SetLineColor(color[i]);
 		Histo->ampl[i]->SetLineColor(color[i]);
 		Histo->integral[i]->SetLineColor(color[i]);
+		Histo->charge[i]->SetLineColor(color[i]);
 		
 		Histo->fDraw[i] = true;
 	}
@@ -697,8 +700,7 @@ void DrawTH2D(bool flag, TH2D *h, int cPos, char *opt){
 	
 }
 void DrawHisto(Histograms_t Histo, int N_CH){
-	
-		
+			
 	if (Histo.fTrace){
 		c1->cd(1);
 		for (int ch = Histo.FirstToDraw; ch<N_CH; ch++){
@@ -722,6 +724,13 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 		for (int ch = Histo.FirstToDraw; ch<N_CH; ch++)
 			if (Histo.fDraw[ch])
 				Histo.integral[ch]->Draw(ch == Histo.FirstToDraw ? "HIST" : "HIST SAME");
+	}
+	
+	if (Histo.fCharge){	
+		c1->cd(Histo.cCharge);
+		for (int ch = Histo.FirstToDraw; ch<N_CH; ch++)
+			if (Histo.fDraw[ch])
+				Histo.charge[ch]->Draw(ch == Histo.FirstToDraw ? "HIST" : "HIST SAME");
 	}
 	
 	DrawTH2D(Histo.fIA, Histo.int_ampl, Histo.cIA, Histo.h2Style);

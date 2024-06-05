@@ -328,6 +328,7 @@ void MainFrame::DoCheckBox(){
    if (id == 41)
 	   Histo.fBL = fC[0]->GetState() == kButtonDown ? true : false; 
    
+   // different type of histograms handler
    if ( id > 41 ) {
 		Histo.fTrace = fC[1]->GetState() == kButtonDown ? true : false;
 		Histo.fAmpl = fC[2]->GetState() == kButtonDown ? true : false;
@@ -348,12 +349,27 @@ void MainFrame::DoCheckBox(){
 		
 		if (Histo.fAmpl)
 			Histo.cAmpl = 1 + (Histo.fTrace ? 1 : 0);
-		
-		if (Histo.fCharge)	
-			Histo.cCharge = 1 + (Histo.fTrace ? 1 : 0) + (Histo.fAmpl ? 1 : 0);
-			
+					
 		if (Histo.fInt)
 			Histo.cInt = 1 + (Histo.fTrace ? 1 : 0) + (Histo.fCharge ? 1 : 0) + (Histo.fAmpl ? 1 : 0);
+		
+		if (Histo.fCharge)	
+			Histo.cCharge = 1 + (Histo.fTrace ? 1 : 0) + (Histo.fAmpl ? 1 : 0) + (Histo.fInt ? 1 : 0);
+		
+		if (Histo.fdT)	
+			Histo.cdT = 1 + (Histo.fTrace ? 1 : 0) + (Histo.fAmpl ? 1 : 0) + (Histo.fInt ? 1 : 0) + (Histo.fCharge ? 1 : 0);
+		
+		if (Histo.fIA)	
+			Histo.cIA = 1 + (Histo.fTrace ? 1 : 0) + (Histo.fAmpl ? 1 : 0) + (Histo.fInt ? 1 : 0) + (Histo.fCharge ? 1 : 0) + (Histo.fdT ? 1 : 0);
+		
+		if (Histo.fPSD_ampl)	
+			Histo.cPSD_ampl = 1 + (Histo.fTrace ? 1 : 0) + (Histo.fAmpl ? 1 : 0) + (Histo.fInt ? 1 : 0) + (Histo.fCharge ? 1 : 0) + (Histo.fdT ? 1 : 0) + (Histo.fIA ? 1 : 0);
+		
+		if (Histo.fPSD_int)	
+			Histo.cPSD_int = 1 + (Histo.fTrace ? 1 : 0) + (Histo.fAmpl ? 1 : 0) + (Histo.fInt ? 1 : 0) + (Histo.fCharge ? 1 : 0) + (Histo.fdT ? 1 : 0) + (Histo.fIA ? 1 : 0) + (Histo.fPSD_ampl ? 1 : 0);
+		
+		if (Histo.fQsl)	
+			Histo.cQsl = 1 + (Histo.fTrace ? 1 : 0) + (Histo.fAmpl ? 1 : 0) + (Histo.fInt ? 1 : 0) + (Histo.fCharge ? 1 : 0) + (Histo.fdT ? 1 : 0) + (Histo.fIA ? 1 : 0) + (Histo.fPSD_ampl ? 1 : 0) + (Histo.fPSD_int ? 1 : 0);
 		
 		c1->Clear( );
 		c1->SetGrid( );
@@ -460,20 +476,12 @@ void MainFrame::ClearHisto()
 		Histo.ampl[ch]->Reset("ICESM");
 		Histo.integral[ch]->Reset("ICESM");
 	}
-/*
-	for (int ch = 0; ch < N_CH; ch++){		 //(int)BoardInfo.Channels
-		h_ampl[ch]->Reset("ICESM");
-		h_integral[ch]->Reset("ICESM");
-		
-		if ( ch < 2){
-			h_psd_ampl->Reset("ICESM");
-			h_psd_int->Reset("ICESM");
-			h_int_ampl->Reset("ICESM");
-			h_qs_ql->Reset("ICESM");
-		}	
-	}		
-	h_dt->Reset("ICESM");
-*/
+	
+	Histo.psd_ampl->Reset("ICESM");
+	Histo.psd_int->Reset("ICESM");
+	Histo.int_ampl->Reset("ICESM");
+	Histo.qs_ql->Reset("ICESM");
+	Histo.dt->Reset("ICESM");		
 			
 //	ec_out = 0;
 	
