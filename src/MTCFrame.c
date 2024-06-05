@@ -351,7 +351,7 @@ void MainFrame::DoCheckBox(){
 			Histo.cAmpl = 1 + (Histo.fTrace ? 1 : 0);
 					
 		if (Histo.fInt)
-			Histo.cInt = 1 + (Histo.fTrace ? 1 : 0) + (Histo.fCharge ? 1 : 0) + (Histo.fAmpl ? 1 : 0);
+			Histo.cInt = 1 + (Histo.fTrace ? 1 : 0) + (Histo.fAmpl ? 1 : 0);
 		
 		if (Histo.fCharge)	
 			Histo.cCharge = 1 + (Histo.fTrace ? 1 : 0) + (Histo.fAmpl ? 1 : 0) + (Histo.fInt ? 1 : 0);

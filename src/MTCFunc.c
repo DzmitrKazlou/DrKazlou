@@ -695,6 +695,7 @@ void DrawTH2D(bool flag, TH2D *h, int cPos, char *opt){
 		h->SetMarkerStyle(21);
 		h->SetMarkerSize(0.4);
 		h->SetMarkerColor(kBlue);
+		printf(" Draw options [%s]\n", opt);
 		h->Draw(opt);
 	}		
 	
