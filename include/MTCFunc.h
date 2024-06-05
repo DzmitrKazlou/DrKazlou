@@ -5,6 +5,7 @@
 #include <../include/CAENDigitizerType.h>
 #include "CAENDigitizer.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include "TGLabel.h"
 #include "TGStatusBar.h"
 
@@ -80,12 +81,13 @@ typedef struct
 	int NPad;
 	int cCharge, cAmpl, cInt, cdT, cPSD_ampl, cPSD_int, cQsl, cIA, cLayers, cCounts, cXY, cRubik;		
 	bool fBL, fTrace, fCharge, fAmpl, fInt, fdT, fPSD_ampl, fPSD_int, fQsl, fIA, fLayers, fLayersCoeff, fCounts, fXY, fRubik;  // flags for every time of histograms
-		
-	TH1D *trace[MAX_CH];
-	TH1D *ampl[MAX_CH];
-	TH1D *integral[MAX_CH];
 	
-	int PSD_BIN = 20;
+	int CH_2D; // channel to draw th2d
+	TH1D *dt;	
+	TH1D *trace[MAX_CH], *ampl[MAX_CH], *integral[MAX_CH], *charge[MAX_CH];
+	TH2D *int_ampl, *psd_ampl, *psd_int, *qs_ql; 
+		
+	int PSD_BIN = 2;
 		
 } Histograms_t;
 
@@ -110,11 +112,13 @@ void ParseConfigFile(FILE *f_ini, DigitizerConfig_t *Dcfg);
 
 void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH);
 
+void DrawTH2D(bool flag, TH2D *h, int cPos, char *opt);
+
 void DrawHisto(Histograms_t Histo, int N_CH);
 	
 void InitReadoutConfig(ReadoutConfig_t *Rcfg, int N_CH); 
 
-void FillHisto(int ch, Histograms_t *Histo, double &ampl);
+void FillHisto(int ch, uint32_t ev, Histograms_t *Histo, double &ampl);
 
 void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo);
 

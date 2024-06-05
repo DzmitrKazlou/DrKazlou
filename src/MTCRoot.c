@@ -60,18 +60,6 @@ using namespace std;
 	
 	
 	
-	
-		
-	//TH2D *h_psd_ampl = new TH2D("h_psd_ampl", "h_psd_ampl", 1000, 0, 20000, 1000, 0, 1);
-	//TH2D *h_psd_int = new TH2D("h_psd_int", "h_psd_int", 1000, 0, 1000000, 1000, 0, 1);
-	//TH2D *h_int_ampl = new TH2D("h_int_ampl", "h_int_ampl", 1000, 0, 20000, 1000, 0, 1000000);
-	//TH2D *h_qs_ql = new TH2D("h_qs_ql", "h_qs_ql", 1000, 0, 500000, 1000, 0, 100000);
-	
-		
-		
-		
-	Int_t CH_2D = 0;
-	
 	TFile *ff;		
 	TTree * tree;		
 	Int_t ec_out = 0, ch_out = 0;

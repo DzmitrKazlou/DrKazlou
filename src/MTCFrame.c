@@ -4,7 +4,7 @@
 #include "MTCOpt.h"
 #include "MTCFunc.h"
 
-extern int N_CH, CH_2D;
+extern int N_CH;
 extern uint32_t log_val[2][8];
 extern int handle;
 
@@ -138,10 +138,7 @@ int iStyle[]	= {0, 0, 2, 0, 0};
 		  fF[i]->AddFrame(fCTime, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
 	  }
    }
-   
-   //N_CH = fNumericEntries[0]->GetNumber();
-   CH_2D = fNumericEntries[3]->GetNumber();
-   
+         
    gframe_opt->Resize();
    
    TGGroupFrame *gframe_ch = new TGGroupFrame(hframe1, "Channels", kVerticalFrame);
@@ -377,8 +374,8 @@ void MainFrame::DoCheckBox(){
 			c1->Divide(4, 4, 0.001, 0.001);
 		
 		c1->Modified();
-		c1->Update( );
-		printf(" id %i NPad %i cAmpl %i cCharge %i cInt %i \n", id, Histo.NPad, Histo.cAmpl, Histo.cCharge, Histo.cInt );
+		//c1->Update( );
+		
    }	
    
 }
@@ -387,6 +384,7 @@ void MainFrame::DoSetVal(){
 	
 	//N_CH = fNumericEntries[0]->GetNumber( );
 	Rcfg.DrawTime = fNumericEntries[2]->GetNumber( );
+	Histo.CH_2D = fNumericEntries[3]->GetNumber();
 	
 }
 
@@ -481,7 +479,7 @@ void MainFrame::ClearHisto()
 	
 	//ret = CAEN_DGTZ_ClearData(handle); // WHAT DOES IT DO? - only crashes
 	c1->Modified( );
-	c1->Update( );
+	//c1->Update( );
 	printf("ClearHisto \n");
 	
 	

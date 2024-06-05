@@ -9,7 +9,8 @@
 #include "TROOT.h"
 
 #include <TSystem.h>
-#include "TH1D.h"
+//#include "TH1D.h"
+//#include "TH2D.h"
 
 //#include "TROOT.h"
 //#include "TApplication.h"
@@ -54,36 +55,34 @@ void CalcRate(int N_CH, uint64_t &PrevRateTime){
 					        	
 			if (ElapsedTime > 1000) { // 1000
 				sprintf(CName,"T: %li s",  (CurrentTime - Rcfg.StartTime) / 1000 );
-				printf("%s \n", CName);
+				//printf("%s \n", CName);
 				Rcfg.TLabel->SetText(CName);
 				gSystem->ProcessEvents(); 
 				
             	if (Rcfg.Nb != 0){
 					sprintf(CName,"Read. %.2f MB/s ", (float)Rcfg.Nb/((float)ElapsedTime*1048.576f) );
-					printf("%s \n", CName);
+					//printf("%s \n", CName);
 					Rcfg.StatusBar->SetText(CName, 0);
 					
 					for (int ch=0; ch<N_CH; ch++) { //8
 						if (Rcfg.TrgCnt[ch] != 0){
 							sprintf(CName, "CH[%i]: %.2f Hz ", ch, (float)Rcfg.TrgCnt[ch]*1000.0f/(float)ElapsedTime);
-							printf("%s \n", CName);
+							//printf("%s \n", CName);
 							if (ch < 15)
 								Rcfg.StatusBar->SetText(CName, ch+1);
 						}
 						else{
 							sprintf(CName, "No data...");
-							printf("%s \n", CName);
+							//printf("%s \n", CName);
 							if (ch < 15)
 								Rcfg.StatusBar->SetText(CName, ch+1);
 						}
 						Rcfg.TrgCnt[ch] = 0;
 					}
-					printf("No data...\n");
-                	
 				}
 									
             	else{
-						printf("No data...\n");
+						//printf("No data...\n");
 						sprintf(CName, "No data...");
 						Rcfg.StatusBar->SetText(CName, 0);
 				}
@@ -136,7 +135,8 @@ CAEN_DGTZ_ErrorCode  SetLogic(int32_t handle, uint32_t reg_val[2][8], int N_CH) 
 																			0x1880, 0x1980, 0x1A80, 0x1B80, 0x1C80, 0x1D80, 0x1E80, 0x1F80};
 																			
  	uint32_t TriggerLatencyAddress[MAX_CH] = { 0x106C, 0x116C, 0x126C, 0x136C, 0x146C, 0x156C, 0x166C, 0x176C,
-																			0x186C, 0x196C, 0x1A6C, 0x1B6C, 0x1C6C, 0x1D6C, 0x1E6C, 0x1F6C};																		
+																			0x186C, 0x196C, 0x1A6C, 0x1B6C, 0x1C6C, 0x1D6C, 0x1E6C, 0x1F6C};					
+																			
 	uint32_t ShapedTriggerWidthAddress[MAX_CH] = { 0x1070, 0x1170, 0x1270, 0x1370, 0x1470, 0x1570, 0x1670, 0x1770,
 																			0x1870, 0x1970, 0x1A70, 0x1B70, 0x1C70, 0x1D70, 0x1E70, 0x1F70};															
 	
@@ -179,8 +179,7 @@ CAEN_DGTZ_ErrorCode  SetLogic(int32_t handle, uint32_t reg_val[2][8], int N_CH) 
 		ret = CAEN_DGTZ_ReadRegister(handle, TriggerLatencyAddress[i], &reg_data);
 		printf(" In  0x%04X: %08X \n", TriggerLatencyAddress[i], reg_data);
 	}
-	
-	
+		
 	for (int i=0; i<2; i++)
 		for (int j=0; j<NCouple; j++){
 			if (reg_val[i][j] != 0){
@@ -669,21 +668,37 @@ void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH){
 	
 	Histo->FirstToDraw = 0;
 	Histo->NPad = 1;
+	Histo->CH_2D = 0;
 	
 	Histo->trace[0]->GetXaxis( )->SetRangeUser(Histo->WF_XMIN, Histo->WF_XMAX);
 	Histo->trace[0]->GetXaxis( )->SetTitle(" Time, ns");
 	Histo->trace[0]->GetYaxis( )->SetRangeUser(Histo->WF_YMIN, Histo->WF_YMAX);
 	Histo->trace[0]->GetYaxis( )->SetTitleOffset(1.1);
 	Histo->trace[0]->GetYaxis( )->SetTitle(" Channels, lbs"); 
+	
+	Histo->dt = new TH1D("h_dt", "h_dt", 1000, 0, 1000);
+	///TH2D	
+	Histo->int_ampl = new TH2D("h_int_ampl", "h_int_ampl", 1000, 0, 16384, 1000, 0, 1000000);
+	Histo->psd_ampl = new TH2D("h_psd_ampl", "h_psd_ampl", 1000, 0, 16384, 1000, 0, 1);
+	Histo->psd_int = new TH2D("h_psd_int", "h_psd_int", 1000, 0, 1000000, 1000, 0, 1);
+	Histo->qs_ql = new TH2D("h_qs_ql", "h_qs_ql", 1000, 0, 50000, 1000, 0, 100000);
+	
 }
 
-////
+void DrawTH2D(bool flag, TH2D *h, int cPos, char *opt){
 
+	if (flag){
+		c1->cd(cPos);
+		h->SetMarkerStyle(21);
+		h->SetMarkerSize(0.4);
+		h->SetMarkerColor(kBlue);
+		h->Draw(opt);
+	}		
+	
+}
 void DrawHisto(Histograms_t Histo, int N_CH){
 	
-	//c1->Divide(2, 2, 0.001, 0.001);
-	//c1->Modified();
-	
+		
 	if (Histo.fTrace){
 		c1->cd(1);
 		for (int ch = Histo.FirstToDraw; ch<N_CH; ch++){
@@ -709,26 +724,28 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 				Histo.integral[ch]->Draw(ch == Histo.FirstToDraw ? "HIST" : "HIST SAME");
 	}
 	
+	DrawTH2D(Histo.fIA, Histo.int_ampl, Histo.cIA, Histo.h2Style);
+	DrawTH2D(Histo.fPSD_ampl, Histo.psd_ampl, Histo.cPSD_ampl, Histo.h2Style);
+	DrawTH2D(Histo.fPSD_int, Histo.psd_int, Histo.cPSD_int, Histo.h2Style);
+	DrawTH2D(Histo.fQsl, Histo.qs_ql, Histo.cQsl, Histo.h2Style);
+	
 	c1->Update( );
 }
 
 ///
-void FillHisto(int ch,  Histograms_t *Histo, double &ampl){ 
+void FillHisto(int ch,  uint32_t ev, Histograms_t *Histo, double &ampl){ 
 	
 		
 	int BL_CUT = 20; //fNumericEntries[1]->GetNumber();
 		
-	//CH_2D = fNumericEntries[3]->GetNumber();	
 	
 	Double_t BL_mean = 0,  integral = 0;
 	ampl = 0;
 	Int_t m_stamp;
 	Double_t psd_val =0, Qs = 0, Ql = 0;
-	
-	
+		
 	Int_t p = Dcfg.PulsePolarity[ch] == CAEN_DGTZ_PulsePolarityPositive ? 1: -1; //POLARITY
-	
-	
+		
 	vector <double> vec, vec_bl; 
 	uint16_t *WaveLine;
 	WaveLine = Waveforms->Trace1;
@@ -746,7 +763,7 @@ void FillHisto(int ch,  Histograms_t *Histo, double &ampl){
 		for ( int j=0; j<vec_bl.size( ); j++){
 			vec.push_back(vec_bl[j] - BL_mean);
 						
-			if (vec[j] * p > ampl){
+			if (vec[j] * p > ampl && j * b_width > Histo->ALBound && j * b_width < Histo->ARBound){
 				ampl = vec[j] * p;
 				m_stamp = j;
 			}	
@@ -755,7 +772,7 @@ void FillHisto(int ch,  Histograms_t *Histo, double &ampl){
 				integral += vec[j] * p;
 		}
 		
-		if (Histo->fBL == true){
+		if (Histo->fBL){
 				for ( int j=0; j<vec.size( ); j++)
 					Histo->trace[ch]->Fill(j * b_width, vec[j]);
 			}
@@ -763,27 +780,48 @@ void FillHisto(int ch,  Histograms_t *Histo, double &ampl){
 				for ( int j=0; j<vec_bl.size( ); j++)
 					Histo->trace[ch]->Fill(j * b_width, vec_bl[j]);
 			}	
+				
+		Histo->integral[ch]->Fill(integral);
+		Histo->ampl[ch]->Fill(ampl);
+		
+		//PSD
+		if ( ( (Histo->fPSD_ampl) || (Histo->fPSD_int) || (Histo->fQsl)  )  && (ch == Histo->CH_2D) ){
+			for (int j=m_stamp; j<vec.size( ); j++){
+				if (j<(m_stamp + Histo->PSD_BIN) )
+					Qs = Qs + p * vec[j];
+				Ql = Ql + p * vec[j];
+			}
+			psd_val = 1 - ( Qs/Ql );
+			
+			if (Histo->fPSD_ampl) 
+				Histo->psd_ampl->Fill(ampl, psd_val);
+			if (Histo->fPSD_int) 
+				Histo->psd_int->Fill(integral, psd_val);	
+			if (Histo->fQsl) 
+				Histo->qs_ql->Fill(Ql, Qs);	
+		}
+		//PSD
+		
+		if (Histo->fCharge)
+			Histo->charge[ch]->Fill(Events[ch][ev].ChargeLong);
+		
+		if (Histo->fIA && ch == Histo->CH_2D)
+			Histo->int_ampl->Fill(ampl, integral);
 		
 		vec.clear();
 		vec_bl.clear();
-		Histo->integral[ch]->Fill(integral);
-		Histo->ampl[ch]->Fill(ampl);
 }
 
-/////
-////
+/////////////////////////////////////////////////////////////////////
+/////END OF HISTOGRAMS FUNCTIONS
+/////////////////////////////////////////////////////////////////////
 
 void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){	
 	CAEN_DGTZ_ErrorCode ret = CAEN_DGTZ_Success;	
 		
-		
-	//uint64_t StartTime;
 	
-	//uint64_t CurrentTime, PrevRateTime, ElapsedTime;
 	uint32_t BufferSize, NumEvents[MAX_CH];	
-
 	uint64_t PrevRateTime = get_time(), PrevDrawTime;
-	//double ampl[N_CH];
 		
 	while(Rcfg.loop == 1) {
 		// Calculate throughput and trigger rate (every second) 		
@@ -822,7 +860,7 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 			
 		for (int ch=0; ch<N_CH; ch++) { 
 			//ampl[ch] = 0;
-			//h_trace[ch]->Reset("ICESM");
+			Histo->trace[ch]->Reset("ICESM");
 			if (Dcfg.ChannelMask & (1<<ch) ){
 				Rcfg.Nev +=(int)NumEvents[ch];
 				for (uint32_t ev=0; ev<(int)NumEvents[ch]; ev++) {
@@ -832,7 +870,7 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 					
 					Double_t a_val;
 					
-					FillHisto(ch, Histo, a_val); // all data performance
+					FillHisto(ch, ev, Histo, a_val); // all data performance
 					if (Rcfg.fPrint)
 						printf(" FillHisto CH[%i] Ev[%i] Nev %i ampl %f \n", ch, ev, Rcfg.Nev, a_val );			
 									   					
