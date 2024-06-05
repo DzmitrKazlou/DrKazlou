@@ -475,6 +475,7 @@ void MainFrame::ClearHisto()
 	for (int ch = 0; ch < N_CH; ch++){		
 		Histo.ampl[ch]->Reset("ICESM");
 		Histo.integral[ch]->Reset("ICESM");
+		Histo.charge[ch]->Reset("ICESM");
 	}
 	
 	Histo.psd_ampl->Reset("ICESM");
