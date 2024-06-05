@@ -680,24 +680,32 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 	//c1->Divide(2, 2, 0.001, 0.001);
 	//c1->Modified();
 	
-	c1->cd(1);
+	if (Histo.fTrace){
+		c1->cd(1);
 		for (int ch=0; ch<N_CH; ch++){
-			Histo.trace[ch]->Draw(ch == 0 ? "HIST" : "HIST SAME");
-			if (ch == 0)
-				Histo.trace[ch]->GetYaxis()->SetRangeUser(Histo.WF_YMIN, Histo.WF_YMAX);
+			if ( Histo.fDraw[ch] ){
+				Histo.trace[ch]->Draw(ch == 0 ? "HIST" : "HIST SAME");
+				if (ch == 0)
+					Histo.trace[ch]->GetYaxis()->SetRangeUser(Histo.WF_YMIN, Histo.WF_YMAX);
+			}
 		}
+	}	
 		
-	c1->cd(2);
+	if (Histo.fAmpl){		
+		c1->cd(2);
 		for (int ch=0; ch<N_CH; ch++)
-			Histo.ampl[ch]->Draw(ch == 0 ? "HIST" : "HIST SAME");
-			
-		
-	c1->cd(3);
+			if (Histo.fDraw[ch])
+				Histo.ampl[ch]->Draw(ch == 0 ? "HIST" : "HIST SAME");
+	}
+	
+	if (Histo.fInt){	
+		c1->cd(3);
 		for (int ch=0; ch<N_CH; ch++)
-			Histo.integral[ch]->Draw(ch == 0 ? "HIST" : "HIST SAME");
+			if (Histo.fDraw[ch])
+				Histo.integral[ch]->Draw(ch == 0 ? "HIST" : "HIST SAME");
+	}
 	
-	
-	//c1->Update( );
+	c1->Update( );
 }
 
 ///

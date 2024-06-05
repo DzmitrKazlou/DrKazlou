@@ -24,7 +24,6 @@ extern CAEN_DGTZ_ErrorCode ret;
 
 MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h)
 {
-	//handle = -1;
    fMain = new TGMainFrame(p, w, h);
 
    // use hierarchical cleaning
@@ -133,7 +132,7 @@ int iStyle[]	= {0, 0, 2, 0, 0};
       fF[i]->AddFrame(fLabel[i], new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
 	  if ( i ==4) {
 		  fNumericEntries[i]->SetState(kFALSE);
-		  fCTime = new TGCheckButton(fF[i], new TGHotString(""), 13);	
+		  fCTime = new TGCheckButton(fF[i], new TGHotString(""), 20);	
 		  fCTime->Connect("Clicked()", "MainFrame", this, "DoCheckBox()");
 		  fF[i]->AddFrame(fCTime, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
 	  }
@@ -180,9 +179,7 @@ int iStyle[]	= {0, 0, 2, 0, 0};
 		fCa[i]->Connect("Clicked()", "MainFrame", this, "DoCheckBox()");
 		gframe_ch->AddFrame(fCa[i], new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 0, 5, 0));
 	}
-		
-		//fCa[4]->SetState(kButtonDisabled); //Coincidence Initialy Disabled
- 
+	 
 	gframe_ch->SetLayoutManager(new TGMatrixLayout(gframe_ch, 0, 2, 3));
 	gframe_ch->Resize(); 
    
@@ -190,15 +187,15 @@ int iStyle[]	= {0, 0, 2, 0, 0};
 	gframe_hist->SetTitlePos(TGGroupFrame::kRight); 
 	vframe1->AddFrame(gframe_hist, new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 5, 5, 5));//
 
-	const char *cblabel[] = {"BL_CUT", "TRACES", "ChargeL", "AMPL_HIST", "INTEGRAL", "dT", "Rubik", "PSD_ampl", "PSD_int", "Qsl", "Int vs Ampl", "Layers", "Counts", "XY"};	
+	const char *cblabel[] = {"BL_CUT", "TRACES", "ChargeL", "AMPL_HIST", "INTEGRAL", "dT", "PSD_ampl", "PSD_int", "Qsl", "Int vs Ampl", "Layers", "Counts", "XY", "Rubik",};	
 		
 	for (int i = 0; i < 14; i++) {
-		if (i!=11){
+		if ( i!=10 ){
 			fC[i] = new TGCheckButton(gframe_hist, new TGHotString(cblabel[i]), 41+i);	
 			fC[i]->Connect("Clicked()", "MainFrame", this, "DoCheckBox()");
 			gframe_hist->AddFrame(fC[i], new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
 		}
-		else{ //if (i==10) for future
+		else{ 
 			TGHorizontalFrame *fHFsub = new TGHorizontalFrame(gframe_hist, 60, 30);
 			fC[i] = new TGCheckButton(fHFsub, new TGHotString(cblabel[i]), 41+i);	
 			fC[i]->Connect("Clicked()", "MainFrame", this, "DoCheckBox()");
@@ -313,14 +310,33 @@ void MainFrame::DoCheckBox(){
 	}  
 	
    //Timer checkbox
-	if (id == 13 ) {
+	if (id == 20 ) {
 	   fNumericEntries[4]->SetState( fCTime->GetState() == kButtonDown ? kTRUE : kFALSE );
 	   Rcfg.fTimer = fSTCheck->GetState( ) == kButtonDown ? true : false;
 	}  
+	
+	if (id < MAX_CH ) {
+		Histo.fDraw[id] = fCa[id]->GetState() == kButtonDown ? true : false;
+	}
    
-   if ( id > 40 ) 
+   if ( id > 40 ) {
 		Histo.fBL = fC[0]->GetState() == kButtonDown ? true : false; 
-		
+		Histo.fTrace = fC[1]->GetState() == kButtonDown ? true : false;
+		Histo.fCharge = fC[2]->GetState() == kButtonDown ? true : false;
+		Histo.fAmpl = fC[3]->GetState() == kButtonDown ? true : false;
+		Histo.fInt = fC[4]->GetState() == kButtonDown ? true : false;
+		Histo.fdT = fC[5]->GetState() == kButtonDown ? true : false;
+		Histo.fPSD_ampl = fC[6]->GetState() == kButtonDown ? true : false;
+		Histo.fPSD_int = fC[7]->GetState() == kButtonDown ? true : false;
+		Histo.fQsl = fC[8]->GetState() == kButtonDown ? true : false;
+		Histo.fIA = fC[9]->GetState() == kButtonDown ? true : false;
+		Histo.fLayers = fC[10]->GetState() == kButtonDown ? true : false;
+		Histo.fLayersCoeff  = fCsub[0]->GetState() == kButtonDown ? true : false;
+		Histo.fCounts = fC[11]->GetState() == kButtonDown ? true : false;
+		Histo.fXY = fC[12]->GetState() == kButtonDown ? true : false;
+		Histo.fRubik = fC[13]->GetState() == kButtonDown ? true : false;
+   }	
+   
 }
 
 void MainFrame::DoSetVal(){
