@@ -24,7 +24,7 @@ extern CAEN_DGTZ_ErrorCode ret;
 
 MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h)
 {
-	handle = -1;
+	//handle = -1;
    fMain = new TGMainFrame(p, w, h);
 
    // use hierarchical cleaning
@@ -46,11 +46,11 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h)
    fMenuFile->AddEntry("L&oad config", M_LOAD_CONFIG);
    fMenuFile->AddEntry("Save &config", M_SAVE_CONFIG);
    fMenuFile->AddEntry("Save &histo", M_FILE_SAVE_HISTO);
-   fMenuFile->AddEntry("Sa&ve traces", M_FILE_SAVE_TRACES);
+   //fMenuFile->AddEntry("Sa&ve traces", M_FILE_SAVE_TRACES);
    fMenuFile->AddSeparator();
    fMenuFile->AddEntry("E&xit", M_FILE_EXIT);
 	
-	fMenuFile->DisableEntry(M_FILE_SAVE_TRACES);
+	//fMenuFile->DisableEntry(M_FILE_SAVE_TRACES);
    
    fMenuOpt = new TGPopupMenu(gClient->GetRoot());
    fMenuOpt->AddEntry("&Hist options", M_OPT_MENU);
@@ -76,8 +76,8 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h)
    fMenuDock->AddFrame(fMenuBar, fMenuBarLayout);
 
 
-	TGHorizontalFrame *hframe1 = new TGHorizontalFrame(fMain,200,40);
-	TGVerticalFrame *vframe1 = new TGVerticalFrame(hframe1,200,40);		
+	TGHorizontalFrame *hframe1 = new TGHorizontalFrame(fMain, 200, 40);
+	TGVerticalFrame *vframe1 = new TGVerticalFrame(hframe1, 200, 40);		
     hframe1->AddFrame(vframe1, new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 5, 5, 5));//
 	
 	TGGroupFrame *gframe_store = new TGGroupFrame(hframe1, " - ", kVerticalFrame);
@@ -93,11 +93,12 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h)
 	fSTLabel = new TGLabel(fFStore, "File name");
 	fFStore->AddFrame(fSTLabel, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
 	
-	fSTTextEntry = new TGTextEntry(fFStore, fSTTextBuffer = new TGTextBuffer(0)) ;
+	//fSTTextEntry = new TGTextEntry(fFStore, fSTTextBuffer = new TGTextBuffer(0)) ;
+	fSTTextEntry = new TGTextEntry(gframe_store, fSTTextBuffer = new TGTextBuffer(0)) ;
 	fSTTextBuffer->AddText(0, "output.root");
 	fSTTextEntry->SetEnabled(0);
-	fSTTextEntry->Resize(80, fSTTextEntry->GetDefaultHeight());
-	fFStore->AddFrame(fSTTextEntry, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
+	fSTTextEntry->Resize(100, fSTTextEntry->GetDefaultHeight());
+	gframe_store->AddFrame(fSTTextEntry, new TGLayoutHints(kLHintsCenterY | kLHintsLeft | kLHintsExpandX, 0, 2, 2, 2));
 	
 	gframe_store->Resize();
 	
@@ -112,23 +113,30 @@ const char *numlabel[] = {
    "N_CH",
    "BLine_cut",
    "DrawTime",
-   "CH_2D"
+   "CH_2D", 
+   "Timer"
     };	
 	
 const Double_t numinit[] = {
-   2, 10, 0.5, 0
+   2, 10, 0.5, 0, 300
 };	
 
-int iStyle[]	= {0, 0, 2, 0}; 	
+int iStyle[]	= {0, 0, 2, 0, 0}; 	
 	
-   for (int i = 0; i < 4; i++) {
+   for (int i = 0; i < 5; i++) {
       fF[i] = new TGHorizontalFrame(gframe_opt, 200, 30);
       gframe_opt->AddFrame(fF[i], new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
-      fNumericEntries[i] = new TGNumberEntry(fF[i], numinit[i], 8, i + 20, (TGNumberFormat::EStyle) iStyle[i]); //numinit[i], 7, i + 20, (TGNumberFormat::EStyle) iStyle[i]
+      fNumericEntries[i] = new TGNumberEntry(fF[i], numinit[i], 8, i + 20, (TGNumberFormat::EStyle) iStyle[i]); 
 	  fNumericEntries[i]->Connect("ValueSet(Long_t)", "MainFrame", this, "DoSetVal()");
       fF[i]->AddFrame(fNumericEntries[i], new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
       fLabel[i] = new TGLabel(fF[i], numlabel[i]);
       fF[i]->AddFrame(fLabel[i], new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
+	  if ( i ==4) {
+		  fNumericEntries[i]->SetState(kFALSE);
+		  fCTime = new TGCheckButton(fF[i], new TGHotString(""), 13);	
+		  fCTime->Connect("Clicked()", "MainFrame", this, "DoCheckBox()");
+		  fF[i]->AddFrame(fCTime, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
+	  }
    }
    
    N_CH = fNumericEntries[0]->GetNumber();
@@ -182,27 +190,29 @@ int iStyle[]	= {0, 0, 2, 0};
 	gframe_hist->SetTitlePos(TGGroupFrame::kRight); 
 	vframe1->AddFrame(gframe_hist, new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 5, 5, 5));//
 
-	fC[0] = new TGCheckButton(gframe_hist, new TGHotString("BL_CUT"), 41);	
-	fC[1] = new TGCheckButton(gframe_hist, new TGHotString("TRACES"), 42);	
-	fC[2] = new TGCheckButton(gframe_hist, new TGHotString("AMPL_HIST"), 43);	
-	fC[3] = new TGCheckButton(gframe_hist, new TGHotString("INTEGRAL"), 44);	
-	fC[4] = new TGCheckButton(gframe_hist, new TGHotString("dT"), 45);	
-	fC[5] = new TGCheckButton(gframe_hist, new TGHotString("Rubik"), 46);	
-	fC[6] = new TGCheckButton(gframe_hist, new TGHotString("PSD_ampl"), 47);	
-	fC[7] = new TGCheckButton(gframe_hist, new TGHotString("PSD_int"), 48);	
-	fC[8] = new TGCheckButton(gframe_hist, new TGHotString("Qsl"), 49);	
-	fC[9] = new TGCheckButton(gframe_hist, new TGHotString("Int vs Ampl"), 50);	
+	const char *cblabel[] = {"BL_CUT", "TRACES", "ChargeL", "AMPL_HIST", "INTEGRAL", "dT", "Rubik", "PSD_ampl", "PSD_int", "Qsl", "Int vs Ampl", "Layers", "Counts", "XY"};	
+		
+	for (int i = 0; i < 14; i++) {
+		if (i!=11){
+			fC[i] = new TGCheckButton(gframe_hist, new TGHotString(cblabel[i]), 41+i);	
+			fC[i]->Connect("Clicked()", "MainFrame", this, "DoCheckBox()");
+			gframe_hist->AddFrame(fC[i], new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
+		}
+		else{ //if (i==10) for future
+			TGHorizontalFrame *fHFsub = new TGHorizontalFrame(gframe_hist, 60, 30);
+			fC[i] = new TGCheckButton(fHFsub, new TGHotString(cblabel[i]), 41+i);	
+			fC[i]->Connect("Clicked()", "MainFrame", this, "DoCheckBox()");
+			fHFsub->AddFrame(fC[i], new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
+			fCsub[0] = new TGCheckButton(fHFsub, new TGHotString("coeff"), 57);	 // be careful with that number
+			fCsub[0]->Connect("Clicked()", "MainFrame", this, "DoCheckBox()");
+			fHFsub->AddFrame(fCsub[0], new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
+			gframe_hist->AddFrame(fHFsub, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 0, 2, 2, 2));
+		}
+	}	
 	
 	fC[0]->SetState(kButtonDown); //BL_CUT ON
 	fC[1]->SetState(kButtonDown); //TRACES ON
-	
-	
-	for (int i = 0; i < 10; i++) {
-		fC[i]->Connect("Clicked()", "MainFrame", this, "DoCheckBox()");
-		gframe_hist->AddFrame(fC[i], new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
-	}	
-	
-	//gframe_hist->SetLayoutManager(new TGMatrixLayout(gframe_hist, 0, 2, 5));
+		
 	gframe_hist->Resize();
 	 
     fInitButton = new TGTextButton(vframe1, " In&it ", 1);
@@ -218,7 +228,7 @@ int iStyle[]	= {0, 0, 2, 0};
    fClearButton->Connect("Clicked()","MainFrame",this,"ClearHisto()");
    vframe1->AddFrame(fClearButton, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 4, 4, 4, 4));	
 	
-	Rcfg.TLabel = new TGLabel(vframe1, "Timer 000 000 000");
+	Rcfg.TLabel = new TGLabel(vframe1, "          Timer          ");
 	Rcfg.TLabel->SetTextFont(sFont);
 	Rcfg.TLabel->Resize(200, 30);
 	
@@ -227,12 +237,12 @@ int iStyle[]	= {0, 0, 2, 0};
 	
 	vframe1->Resize();
 	
-	fEcanvas1 = new TRootEmbeddedCanvas("Ecanvas1", hframe1, 1400, 800);
-	hframe1->AddFrame(fEcanvas1, new TGLayoutHints(kLHintsCenterX, 10,5,25,0));//kLHintsExpandX |   kLHintsExpandY
+	fEcanvas1 = new TRootEmbeddedCanvas("Ecanvas1", hframe1, 1650, 900);  // ADD THIS VALUES TO CONFIG!!
+	hframe1->AddFrame(fEcanvas1, new TGLayoutHints(kLHintsCenterX, 2, 5, 2,0)); 
 	hframe1->Resize();
 
 	
-   fMain->AddFrame(hframe1, new TGLayoutHints(kLHintsCenterX, 2, 2 , 2, 2) );
+   fMain->AddFrame(hframe1, new TGLayoutHints(kLHintsCenterX, 2, 2, 2, 2) );
 	
 		
 	// status bar
@@ -261,15 +271,15 @@ int iStyle[]	= {0, 0, 2, 0};
 	hframe2->Resize();
 	fMain->AddFrame(hframe2, new TGLayoutHints(kLHintsCenterX,       2, 2, 20, 2));
       
-   
+   //to add icon and name for the application
    fMain->SetWindowName("MTCRoot");
-   fMain->SetIconName("MTCRoot");
-   fMain->SetIconPixmap("/home/valera/Programs/CAEN/MTCRoot/rose512.jpg");
+   //fMain->SetIconName("MTCRoot");
+   //fMain->SetIconPixmap("/home/valera/Programs/CAEN/MTCRoot/rose512.jpg");
    fMain->MapSubwindows( );
 
 	fMain->Resize( );
 	fMain->MapWindow( );
-   //fMain->Print();
+
    Connect("Created()", "MainFrame", this, "Welcome()");
    Created( );
 }
@@ -298,24 +308,26 @@ void MainFrame::DoCheckBox(){
 	
 	//Store traces checkbox
 	if (id == 40 ) {
-	   if (fSTCheck->GetState() == kButtonDown)
-            fSTTextEntry->SetEnabled(1);
-		else
-			fSTTextEntry->SetEnabled(0);
-	}
+	   fSTTextEntry->SetEnabled( fSTCheck->GetState() == kButtonDown ? 1 : 0 );
+	   Rcfg.fStoreTraces = fSTCheck->GetState( ) == kButtonDown ? true : false;
+	}  
+	
+   //Timer checkbox
+	if (id == 13 ) {
+	   fNumericEntries[4]->SetState( fCTime->GetState() == kButtonDown ? kTRUE : kFALSE );
+	   Rcfg.fTimer = fSTCheck->GetState( ) == kButtonDown ? true : false;
+	}  
    
-   if (id > 40 ) 
+   if ( id > 40 ) 
 		Histo.fBL = fC[0]->GetState() == kButtonDown ? true : false; 
-	
-  				
-	
+		
 }
 
 void MainFrame::DoSetVal(){
 	
-	N_CH = fNumericEntries[0]->GetNumber();
-	Rcfg.DrawTime = fNumericEntries[2]->GetNumber();
-	Histo.fBL = true; //fC[0]->GetState() == kButtonDown ? true : false;
+	N_CH = fNumericEntries[0]->GetNumber( );
+	Rcfg.DrawTime = fNumericEntries[2]->GetNumber( );
+	
 }
 
 
@@ -422,10 +434,9 @@ void MainFrame::ClearHisto()
 void MainFrame::StartButton()
 {	
  	printf("Start button \n");
-	//uint64_t StartTime;
-	
+		
 	Rcfg.StartTime = get_time( );
-	printf("Start time %ld \n", Rcfg.StartTime);
+	
 	
 	/*
 	//Store traces if choosen

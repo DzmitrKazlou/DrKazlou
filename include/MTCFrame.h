@@ -64,31 +64,18 @@ enum ETestCommandIdentifiers {
    M_SAVE_CONFIG,
    M_FILE_SAVE_HISTO,
    M_FILE_SAVE_TRACES,
-   M_FILE_PRINT,
-   M_FILE_PRINTSETUP,
    M_FILE_EXIT,
-
-   M_TEST_DLG,
-   M_TEST_MSGBOX,
-   M_TEST_SLIDER,
-   M_TEST_SHUTTER,
-   M_TEST_DIRLIST,
-   M_TEST_FILELIST,
-   M_TEST_PROGRESS,
-   M_TEST_NUMBERENTRY,
-
+   
+   //M_TEST_MSGBOX,
+   //M_TEST_SLIDER,
+   //M_TEST_SHUTTER,
+   
 	M_OPT_MENU,	
 	M_PARAMS_MENU,	
 	M_LOGIC_MENU,	
 
    M_MANUAL,
    M_HELP_ABOUT,
-
-   M_CASCADE_1,
-   M_CASCADE_2,
-   M_CASCADE_3,
-
-   M_NEW_REMOVEMENU,
   
 };
 
@@ -104,12 +91,7 @@ private:
    TRootEmbeddedCanvas	*fEcanvas1;
    TRootEmbeddedCanvas	*fEcanvas2;	
 
-   TGTextEntry        *fTestText;
-   TGButton           *fTestButton1;
-   TGButton           *fTestButton2;	
-   TGColorSelect      *fColorSel;
 
-	
 	
 
    TGHorizontalFrame    *fFStore, *fF[8], *fFTimer;
@@ -119,8 +101,8 @@ private:
    TGTextEntry *fSTTextEntry;
    TGTextBuffer *fSTTextBuffer;
    
-	//TGRadioButton *fR[4];
-	TGCheckButton *fSTCheck, *fC[10], *fCa[16];	
+	
+	TGCheckButton *fSTCheck, *fCTime, *fC[15], *fCsub[2], *fCa[16];	
 	
 	TGTextButton 	* fInitButton, *fClearButton, *fStartButton, *fStopButton;	
 	
@@ -130,10 +112,9 @@ private:
    TGPopupMenu        *fMenuFile, *fMenuOpt, *fMenuHelp;
   
    TGLayoutHints      *fMenuBarLayout, *fMenuBarItemLayout, *fMenuBarHelpLayout;
-
       
    
-	TPad *pad;
+	TPad *pad; // used only for Rubik 5x5  th2d plot to SetGrid
 		
 	
 public:
@@ -152,10 +133,7 @@ public:
 	char CName[300];
 	
    // slots
-   
-    // void FillHisto(Int_t ch, Double_t &ampl, uint32_t timestamp ); 
-   //void DrawHisto( ); 
-  // void ReadoutLoop();
+      
    void CloseWindow();
    void InitButton();
    void ClearHisto();	

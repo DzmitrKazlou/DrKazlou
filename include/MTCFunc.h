@@ -52,6 +52,10 @@ typedef struct
 typedef struct
 {	
 	bool fPrint;
+	bool fTimer;
+	int timer_val;
+	bool fStoreTraces;
+	
 	int loop;
 	uint32_t Nb;
 	int Nev;
@@ -79,6 +83,8 @@ typedef struct
 	bool fBL; // BASE_LINE flag
 	
 	char h2Style[10];
+	bool fDraw[MAX_CH]; // channel draw flag
+	int FirstToDraw; //first channel to draw
 	
 	TH1D *trace[MAX_CH];
 	TH1D *ampl[MAX_CH];

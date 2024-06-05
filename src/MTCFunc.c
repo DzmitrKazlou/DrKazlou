@@ -632,6 +632,9 @@ void ParseConfigFile(FILE *f_ini, DigitizerConfig_t *Dcfg) // CAEN_DGTZ_DPP_PSD_
 void InitReadoutConfig(ReadoutConfig_t *Rcfg, int N_CH){
 	
 	Rcfg->fPrint = false; // common print flag for debug
+	Rcfg->fStoreTraces = false; // flag to store traces
+	Rcfg->fTimer = false; // flag for timer usage
+	
 	Rcfg->loop = -1; // ReadoutLoop flag
 	Rcfg->DrawTime = 0.5; // time between histograms drawing in sec
 	for (int i = 0; i<N_CH; i++)
@@ -659,6 +662,8 @@ void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH){
 		Histo->trace[i]->SetLineColor(color[i]);
 		Histo->ampl[i]->SetLineColor(color[i]);
 		Histo->integral[i]->SetLineColor(color[i]);
+		
+		Histo->fDraw[i] = true;
 	}
 	
 	Histo->trace[0]->GetXaxis( )->SetRangeUser(Histo->WF_XMIN, Histo->WF_XMAX);

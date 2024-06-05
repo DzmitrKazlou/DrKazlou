@@ -47,17 +47,10 @@ int handle = -1;
 	ReadoutConfig_t   Rcfg;
 	CAEN_DGTZ_ErrorCode ret;
 	Histograms_t Histo;
-	
-	
 
 
 using namespace std;
-
-	// used for histograms in DrawHisto function
-	//Color_t color[16] = {kBlue, kRed, kViolet, kGreen+1, kPink-9, kOrange, kMagenta, kCyan-7, kGray, kBlack, kBlue, kRed, kGreen, kOrange-2, kBlack, kOrange+2}; 			
 	
-		
-		
 	
 	char *buffer = NULL;
 	CAEN_DGTZ_DPP_PSD_Event_t   *Events[MAX_CH];  // events buffer
@@ -67,18 +60,6 @@ using namespace std;
 	
 	
 	
-	//char * EventPtr = NULL;
-	//uint32_t AllocatedSize, BufferSize, NumEvents[MAX_CH];
-	
-	//int DrawTime = 1000; //ms
-	
-			
-	//uint64_t StartTime, CurrentTime, PrevRateTime, ElapsedTime, time1, time2;
-    
-		
-	//TH1D *h_trace[MAX_CH];
-	//TH1D *h_ampl[MAX_CH], *h_integral[MAX_CH];
-	//TH1D *h_dt = new TH1D("hist_dt","hist dt", 400, -200, 200);
 	
 		
 	//TH2D *h_psd_ampl = new TH2D("h_psd_ampl", "h_psd_ampl", 1000, 0, 20000, 1000, 0, 1);
@@ -390,168 +371,10 @@ void MainFrame::DrawHisto( ){
 }
 
 */
-/*
-
-void MainFrame::ReadoutLoop( ){	
-		
-	PrevRateTime = get_time();
-	Double_t ampl[N_CH];
-	const char* xlabel[5] = {"5", "6", "7", "8", "9"};
-	const char* ylabel[5] = {"0", "1", "2", "3", "4"};
-	
-	for (Int_t i=0; i<5; i++)
-		h_rubik->Fill(xlabel[i], ylabel[i], 0);
-	
-	while(loop == 1) {
-		
-			   
-	  // Calculate throughput and trigger rate (every second) 			
-			
-        	
-        	CurrentTime = get_time();
-        	ElapsedTime = CurrentTime - PrevRateTime;
-
-        	
-        	//if (ElapsedTime > (fNumericEntries[3]->GetNumber()*1000)) { // 1000
-			if (ElapsedTime > 1000) { // 1000
-				sprintf(CName,"T: %li s",  (CurrentTime - StartTime) / 1000 );
-				fTLabel->SetText(CName);
-				gSystem->ProcessEvents(); 
-            	if (Nb != 0){
-					sprintf(CName,"Read. %.2f MB/s ", (float)Nb/((float)ElapsedTime*1048.576f) );
-					fStatusBar->SetText(CName, 0);
-					
-					for (Int_t ch=0; ch<N_CH; ch++) { //8
-						if (TrgCnt[ch] != 0){
-							sprintf(CName, "CH[%i]: %.2f Hz ", ch, (float)TrgCnt[ch]*1000.0f/(float)ElapsedTime);
-							if (ch < 15)
-								fStatusBar->SetText(CName, ch+1);
-						}
-						else{
-							sprintf(CName, "No data...");
-							if (ch < 15)
-								fStatusBar->SetText(CName, ch+1);
-						}
-						TrgCnt[ch] = 0;
-					}
-					//printf("No data...\n");
-                	//if (ret == CAEN_DGTZ_Timeout) printf ("Timeout...\n"); else printf("No data...\n");
-				}
-									
-            	else{
-						//printf("No data...\n");
-						sprintf(CName, "No data...");
-						fStatusBar->SetText(CName, 0);
-				}
-								
-            Nb = 0;
-            		
-            PrevRateTime = CurrentTime;
-			gSystem->ProcessEvents(); 
-        	}
-		// Calculate throughput and trigger rate (every second) 
-	   
-		ret = CAEN_DGTZ_ReadData(handle,CAEN_DGTZ_SLAVE_TERMINATED_READOUT_MBLT, buffer, &BufferSize); // Read the buffer from the digitizer 
-		if (ret) {
-			printf("ERR_READ_DATA \n");
-			sprintf(CName, "ERR_READ_DATA");
-			new TGMsgBox(gClient->GetRoot(), fMain, "Error", CName, kMBIconStop, kMBOk);
-			ret = QuitMain(handle, buffer, (void**)&Events, Waveforms);
-        }
-		
-		//printf("BufferSize: %d\n", BufferSize);	
-        
-		
-        if (BufferSize == 0) 
-			continue;
-		
-		
-		
-		Nb += BufferSize;
-		
-		ret = CAEN_DGTZ_GetDPPEvents(handle, buffer, BufferSize, (void**)&Events, NumEvents);
-        if (ret) {
-            sprintf(CName, "GET_DPPEVENTS");
-			new TGMsgBox(gClient->GetRoot(), fMain, "Error", CName, kMBIconStop, kMBOk);
-            ret = QuitMain(handle, buffer, (void**)&Events, Waveforms);
-        }
-        
-		if ( fPrint == true)
-			printf(" ---------------------------------------- \n");			
-		
-		int Nev = 0;
-			
-		for (Int_t ch=0; ch<N_CH; ch++) { 
-			//ampl[ch] = 0;
-			h_trace[ch]->Reset("ICESM");
-			if (Dcfg.ChannelMask & (1<<ch) ){
-				Nev +=(int)NumEvents[ch];
-				for (uint32_t ev=0; ev<(int)NumEvents[ch]; ev++) {
-				
-					CAEN_DGTZ_DecodeDPPWaveforms(handle, (void**)&Events[ch][ev], Waveforms);
-					TrgCnt[ch]++;
-					
-					Double_t a_val;
-					FillHisto(ch, a_val, Events[ch][ev].TimeTag); // all data performance
-					//printf(" FillHisto CH[%i] Ev[%i] Nev %i \n", ch, ev, Nev );			
-				   
-					//if (ev == 0){
-					//	ampl[ch] = a_val;
-					//	
-					//}	
-					gSystem->ProcessEvents(); 
-				} // events loop
-	
 
 
-	
-			} // check enabled channels
-			
-		}// channels loop
-		
-		bool fdT  = fC[4]->GetState() == kButtonDown ? true : false;
-		bool fRubik  = fC[5]->GetState() == kButtonDown ? true : false;
-		
-		if (fdT == true){
-			double dt = (Events[1][0].TimeTag > Events[0][0].TimeTag) ? (double)(Events[1][0].TimeTag - Events[0][0].TimeTag) : (double)(Events[0][0].TimeTag - Events[1][0].TimeTag);
-			printf(" [1] %d [0] %d dt %f ns  \n", Events[1][0].TimeTag, Events[0][0].TimeTag, dt/1000);
-			h_dt->Fill(dt/1000);
-		}
-		
-				
-		if (fRubik == true && Nev!=0){
-			h_rubik->Reset("ICESM" );
-			
-			for (Int_t ch=0; ch<N_CH; ch++){
-				if (ampl[ch] > 0 && ch < 5) {
-					for (Int_t i=0; i<5; i++)
-						h_rubik->Fill(xlabel[i], ylabel[ch], 1);
-					
-				}
-				if (ampl[ch] > 0 && ch >= 5) {
-					for (Int_t i=0; i<5; i++)
-						h_rubik->Fill(xlabel[ch-5], ylabel[i], 1);
-				}
-			}
-			
-		}	
-		
-		if (ElapsedTime>=(fNumericEntries[2]->GetNumber()*1000) && Nev!=0)//&& i==0 ) // sec*1000 = ms // DrawTime = fNumericEntries[6]->GetNumber()
-			DrawHisto( );	
-		
-		if ( fPrint == true)
-			printf(" ---------------------------------------- \n");			
-		
-		
-		gSystem->ProcessEvents(); 
-		
-    } // end of readout loop		
-				
-	
-}
 
-*/
-// for far future
+// for far far future
 /* 
 auto gui = [ ]( ){
 	new MainFrame(gClient->GetRoot(), 1800, 800);
@@ -602,7 +425,7 @@ int main(int argc, char **argv)
 		
    //GUI;
    handle = 0;
-   new MainFrame(gClient->GetRoot(), 1800, 800);
+   new MainFrame(gClient->GetRoot(), 1900, 900);
     
    // Create the task group and give work to it
    //auto t1  = async( gui);
