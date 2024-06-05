@@ -682,7 +682,7 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 	
 	if (Histo.fTrace){
 		c1->cd(1);
-		for (int ch=0; ch<N_CH; ch++){
+		for (int ch = Histo.FirstToDraw( ); ch<N_CH; ch++){
 			if ( Histo.fDraw[ch] ){
 				Histo.trace[ch]->Draw(ch == 0 ? "HIST" : "HIST SAME");
 				if (ch == 0)
@@ -693,14 +693,14 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 		
 	if (Histo.fAmpl){		
 		c1->cd(2);
-		for (int ch=0; ch<N_CH; ch++)
+		for (int ch = Histo.FirstToDraw( ); ch<N_CH; ch++)
 			if (Histo.fDraw[ch])
 				Histo.ampl[ch]->Draw(ch == 0 ? "HIST" : "HIST SAME");
 	}
 	
 	if (Histo.fInt){	
 		c1->cd(3);
-		for (int ch=0; ch<N_CH; ch++)
+		for (int ch = Histo.FirstToDraw( ); ch<N_CH; ch++)
 			if (Histo.fDraw[ch])
 				Histo.integral[ch]->Draw(ch == 0 ? "HIST" : "HIST SAME");
 	}
@@ -721,9 +721,9 @@ void FillHisto(int ch,  Histograms_t *Histo, double &ampl){
 	Int_t m_stamp;
 	Double_t psd_val =0, Qs = 0, Ql = 0;
 	
-	//Int_t PSD_BIN = 2;
+	
 	Int_t p = Dcfg.PulsePolarity[ch] == CAEN_DGTZ_PulsePolarityPositive ? 1: -1; //POLARITY
-	//Int_t p = -1; // NEGATIVE
+	
 	
 	vector <double> vec, vec_bl; 
 	uint16_t *WaveLine;

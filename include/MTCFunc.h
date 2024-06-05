@@ -70,22 +70,22 @@ typedef struct
 
 typedef struct
 {	
-	int WF_XMIN;
-	int WF_XMAX;
-	int WF_YMIN;
-	int WF_YMAX;
-	
-	int ALBound;
-	int ARBound;
-	int ILBound;
-	int IRBound;
-	
-	bool fBL; // BASE_LINE flag
+	int WF_XMIN, WF_XMAX, WF_YMIN, WF_YMAX;
+	int ALBound, ARBound, ILBound, IRBound;
+		
 	
 	char h2Style[10];
 	bool fDraw[MAX_CH]; // channel draw flag
-	int FirstToDraw; //first channel to draw
-	bool fTrace, fCharge, fAmpl, fInt, fdT, fPSD_ampl, fPSD_int, fQsl, fIA, fLayers, fLayersCoeff, fCounts, fXY, fRubik;  // flags for every time of histograms
+	//int FirstToDraw; //first channel to draw
+		int FirstToDraw( ){
+			int n = MAX_CH;
+			for (int i = 0; i<MAX_CH; i++)
+				if (fDraw[i] && i<n) 
+					n = i;
+			return n;
+		}
+		
+	bool fBL, fTrace, fCharge, fAmpl, fInt, fdT, fPSD_ampl, fPSD_int, fQsl, fIA, fLayers, fLayersCoeff, fCounts, fXY, fRubik;  // flags for every time of histograms
 		
 	TH1D *trace[MAX_CH];
 	TH1D *ampl[MAX_CH];

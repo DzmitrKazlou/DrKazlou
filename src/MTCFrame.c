@@ -7,8 +7,7 @@
 extern int N_CH, CH_2D;
 extern uint32_t log_val[2][8];
 extern int handle;
-//extern int loop;
-//extern uint64_t StartTime;
+
 extern DigitizerConfig_t Dcfg;
 extern ReadoutConfig_t Rcfg;
 extern Histograms_t Histo;
@@ -117,7 +116,7 @@ const char *numlabel[] = {
     };	
 	
 const Double_t numinit[] = {
-   2, 10, 0.5, 0, 300
+   (double)N_CH, 10, 0.5, 0, 300
 };	
 
 int iStyle[]	= {0, 0, 2, 0, 0}; 	
@@ -130,6 +129,8 @@ int iStyle[]	= {0, 0, 2, 0, 0};
       fF[i]->AddFrame(fNumericEntries[i], new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
       fLabel[i] = new TGLabel(fF[i], numlabel[i]);
       fF[i]->AddFrame(fLabel[i], new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2));
+	   if ( i ==0) 
+		  fNumericEntries[i]->SetState(kFALSE);
 	  if ( i ==4) {
 		  fNumericEntries[i]->SetState(kFALSE);
 		  fCTime = new TGCheckButton(fF[i], new TGHotString(""), 20);	
@@ -138,7 +139,7 @@ int iStyle[]	= {0, 0, 2, 0, 0};
 	  }
    }
    
-   N_CH = fNumericEntries[0]->GetNumber();
+   //N_CH = fNumericEntries[0]->GetNumber();
    CH_2D = fNumericEntries[3]->GetNumber();
    
    gframe_opt->Resize();
@@ -341,7 +342,7 @@ void MainFrame::DoCheckBox(){
 
 void MainFrame::DoSetVal(){
 	
-	N_CH = fNumericEntries[0]->GetNumber( );
+	//N_CH = fNumericEntries[0]->GetNumber( );
 	Rcfg.DrawTime = fNumericEntries[2]->GetNumber( );
 	
 }

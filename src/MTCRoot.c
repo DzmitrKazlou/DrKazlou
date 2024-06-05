@@ -38,7 +38,7 @@
 
 
 
-int N_CH = 2;
+int N_CH = 4;
 uint32_t log_val[2][8] = {};
 int handle = -1;
 
