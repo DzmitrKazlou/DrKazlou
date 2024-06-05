@@ -734,10 +734,41 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 				Histo.charge[ch]->Draw(ch == Histo.FirstToDraw ? "HIST" : "HIST SAME");
 	}
 	
-	DrawTH2D(Histo.fIA, Histo.int_ampl, Histo.cIA, Histo.h2Style);//Histo.h2Style
-	DrawTH2D(Histo.fPSD_ampl, Histo.psd_ampl, Histo.cPSD_ampl, Histo.h2Style);
-	DrawTH2D(Histo.fPSD_int, Histo.psd_int, Histo.cPSD_int, Histo.h2Style);
-	DrawTH2D(Histo.fQsl, Histo.qs_ql, Histo.cQsl, Histo.h2Style);
+	//DrawTH2D(Histo.fIA, Histo.int_ampl, Histo.cIA, Histo.h2Style);//Histo.h2Style
+	//DrawTH2D(Histo.fPSD_ampl, Histo.psd_ampl, Histo.cPSD_ampl, Histo.h2Style);
+	//DrawTH2D(Histo.fPSD_int, Histo.psd_int, Histo.cPSD_int, Histo.h2Style);
+	//DrawTH2D(Histo.fQsl, Histo.qs_ql, Histo.cQsl, Histo.h2Style);
+	if (Histo.fIA){
+		c1->cd(Histo.cIA);
+		Histo.int_ampl->SetMarkerStyle(21);
+		Histo.int_ampl->SetMarkerSize(0.4);
+		Histo.int_ampl->SetMarkerColor(kBlue);
+		Histo.int_ampl->Draw(" ");
+	}
+
+	if (Histo.fPSD_ampl){
+		c1->cd(Histo.cPSD_ampl);
+		Histo.psd_ampl->SetMarkerStyle(21);
+		Histo.psd_ampl->SetMarkerSize(0.4);
+		Histo.psd_ampl->SetMarkerColor(kBlue);
+		Histo.psd_ampl->Draw(" ");
+	}
+
+	if (Histo.fPSD_int){
+		c1->cd(Histo.cPSD_int);
+		Histo.psd_int->SetMarkerStyle(21);
+		Histo.psd_int->SetMarkerSize(0.4);
+		Histo.psd_int->SetMarkerColor(kBlue);
+		Histo.psd_int->Draw(" ");
+	}	
+	
+	if (Histo.fQsl){
+		c1->cd(Histo.cQsl);
+		Histo.qs_ql->SetMarkerStyle(21);
+		Histo.qs_ql->SetMarkerSize(0.4);
+		Histo.qs_ql->SetMarkerColor(kBlue);
+		Histo.qs_ql->Draw(" ");
+	}	
 	
 	c1->Update( );
 }
