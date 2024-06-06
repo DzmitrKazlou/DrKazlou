@@ -683,6 +683,7 @@ void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH){
 	Histo->dt = new TH1D("h_dt", "h_dt", 1000, 0, 1000);
 	
 	Histo->counts = new TH1D("h_counts", "h_counts", 16, 0, 16);
+	Histo->layers = new TH1D("h_layers", "h_layers", 16, 0, 16);
 	
 	///TH2D	
 	Histo->int_ampl = new TH2D("h_int_ampl", "h_int_ampl", 1000, 0, 16384, 1000, 0, 1000000);
@@ -742,6 +743,18 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 	DrawTH2D(Histo.fPSD_int, Histo.psd_int, Histo.cPSD_int, Histo.h2Style);
 	DrawTH2D(Histo.fQsl, Histo.qs_ql, Histo.cQsl, Histo.h2Style);
 	
+	if (Histo.fLayers){
+		c1->cd(Histo.cLayers);
+		Histo.layers->Reset("ICESM");
+		for (int i = Histo.FirstToDraw; i<N_CH; i++)
+			Histo.layers->Fill( i, Histo.fLayersCoeff == false ?  Histo.ampl[i]->GetMean( ) : Histo.ampl[i]->GetMean( ) / Histo.layers_coeff[i] );
+		
+		Histo.layers->SetLineColor(kMagenta+3);
+		Histo.layers->SetFillColor(kMagenta+3);
+		Histo.layers->Draw("bar hist");
+		Histo.layers->SetBarWidth(0.95);
+	}
+	
 	if (Histo.fCounts){
 		c1->cd(Histo.cCounts);
 		Histo.counts->Reset("ICESM");
@@ -753,6 +766,8 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 		Histo.counts->Draw("bar hist");
 		Histo.counts->SetBarWidth(0.95);
 	}	
+	
+	
 		
 	c1->Update( );
 }
@@ -903,10 +918,7 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 									   					
 					gSystem->ProcessEvents(); 
 				} // events loop
-	
-
-
-	
+		
 			} // check enabled channels
 			
 		}// channels loop
@@ -949,7 +961,7 @@ CAEN_DGTZ_ErrorCode DataAcquisition(int N_CH, Histograms_t *Histo){
 		
 		if (Rcfg.loop == 0){
 			ret = CAEN_DGTZ_SWStopAcquisition(handle);
-			printf("Stop acquisition %i \n", ret);
+			//printf("Stop acquisition %i \n", ret);
 			Rcfg.loop = -1;
 		}
 	}

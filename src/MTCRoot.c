@@ -145,6 +145,10 @@ int main(int argc, char **argv)
    memset(&Rcfg, 0, sizeof(Rcfg));
    memset(&Histo, 0, sizeof(Histo));
 	
+	double layers_coeff[MAX_CH] = {1.0, 1.0, 0.9, 1.0, 1.06, 1.16, 1.02, 0.94, 0.16, 0.84, 0.96, 1.16, 0.14, 0.16, 0.14, 0.11 }; // cosmic	
+	for (int i = 0; i<MAX_CH; i++)
+		Histo.layers_coeff[i] = layers_coeff[i];
+	
 	//Configuration file routine
 	
 	FILE *f_ini = fopen(DEFAULT_CONFIG_FILE, "r");
@@ -162,7 +166,9 @@ int main(int argc, char **argv)
 	//Configuration file routine
 	
 	InitReadoutConfig(&Rcfg, N_CH);	
-		
+	
+	
+	
    //GUI;
    handle = 0;
    new MainFrame(gClient->GetRoot(), 1900, 900);

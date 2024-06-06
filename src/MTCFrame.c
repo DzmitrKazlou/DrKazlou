@@ -371,8 +371,17 @@ void MainFrame::DoCheckBox(){
 		if (Histo.fQsl)	
 			Histo.cQsl = 1 + (Histo.fTrace ? 1 : 0) + (Histo.fAmpl ? 1 : 0) + (Histo.fInt ? 1 : 0) + (Histo.fCharge ? 1 : 0) + (Histo.fdT ? 1 : 0) + (Histo.fIA ? 1 : 0) + (Histo.fPSD_ampl ? 1 : 0) + (Histo.fPSD_int ? 1 : 0);
 		
+		if (Histo.fLayers)
+			Histo.cLayers = Histo.NPad - (Histo.fRubik ? 1 : 0) - (Histo.fXY ? 1 : 0) - (Histo.fCounts ? 1 : 0);
+		
 		if (Histo.fCounts)
 			Histo.cCounts = Histo.NPad - (Histo.fRubik ? 1 : 0) - (Histo.fXY ? 1 : 0);
+		
+		if (Histo.fXY)
+			Histo.cXY = Histo.NPad - (Histo.fRubik ? 1 : 0);
+		
+		if (Histo.fRubik)
+			Histo.fRubik = Histo.NPad;
 		
 		c1->Clear( );
 		c1->SetGrid( );
@@ -460,7 +469,7 @@ void MainFrame::InitButton()
 			fCa[i]->SetState(kButtonDisabled);
 	}	
 	
-	printf("handle after init %i \n", handle);
+	//printf("handle after init %i \n", handle);
 	fInitButton->SetState (kButtonDisabled);
 	fNumericEntries[0]->SetState(kFALSE);
 	
@@ -487,6 +496,7 @@ void MainFrame::ClearHisto()
 	Histo.qs_ql->Reset("ICESM");
 	
 	Histo.dt->Reset("ICESM");		
+	Histo.layers->Reset("ICESM");		
 	Histo.counts->Reset("ICESM");		
 			
 //	ec_out = 0;
