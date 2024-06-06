@@ -329,7 +329,7 @@ void MainFrame::DoCheckBox(){
 	   Histo.fBL = fC[0]->GetState() == kButtonDown ? true : false; 
    
    // different type of histograms handler
-   if ( id > 41 ) {
+   if ( id > 41) {
 		Histo.fTrace = fC[1]->GetState() == kButtonDown ? true : false;
 		Histo.fAmpl = fC[2]->GetState() == kButtonDown ? true : false;
 		Histo.fCharge = fC[3]->GetState() == kButtonDown ? true : false;
@@ -345,7 +345,8 @@ void MainFrame::DoCheckBox(){
 		Histo.fXY = fC[12]->GetState() == kButtonDown ? true : false;
 		Histo.fRubik = fC[13]->GetState() == kButtonDown ? true : false;
 		
-		fC[id-41]->GetState() == kButtonDown ? Histo.NPad++ : Histo.NPad-- ;
+		if ( id < 55 )
+			fC[id-41]->GetState() == kButtonDown ? Histo.NPad++ : Histo.NPad-- ;
 		
 		if (Histo.fAmpl)
 			Histo.cAmpl = 1 + (Histo.fTrace ? 1 : 0);
