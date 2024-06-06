@@ -691,7 +691,7 @@ void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH){
 	Histo->psd_int = new TH2D("h_psd_int", "h_psd_int", 1000, 0, 1000000, 1000, 0, 1);
 	Histo->qs_ql = new TH2D("h_qs_ql", "h_qs_ql", 1000, 0, 50000, 1000, 0, 100000);
 	Histo->xy = new TH2D("h_xy", "h_xy", 16, 0, 16, 16, 0, 16);
-	//Histo->rubik = new TH2D("h_rubik", "h_rubik", 5, 5, 10, 5, 0, 5);
+	Histo->rubik = new TH2D("h_rubik", "h_rubik", 5, 5, 10, 5, 0, 5);
 	
 }
 
@@ -776,8 +776,19 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 		TPad *pad = (TPad*)c1->GetPrimitive(str);
 		pad->SetGrid( );
 		Histo.xy->Draw("COLZ");
-		Histo.xy->GetXaxis()->SetLabelSize(0.08);
-		Histo.xy->GetYaxis()->SetLabelSize(0.08);
+		Histo.xy->GetXaxis( )->SetLabelSize(0.08);
+		Histo.xy->GetYaxis( )->SetLabelSize(0.08);
+	}
+	
+	if (Histo.fRubik){
+		c1->cd(Histo.cRubik);
+		char str[20];
+		sprintf(str,"Ecanvas1_%i", Histo.cRubik);
+		TPad *pad = (TPad*)c1->GetPrimitive(str);
+		pad->SetGrid( );
+		Histo.rubik->Draw("COLZ");
+		Histo.rubik->GetXaxis( )->SetLabelSize(0.08);
+		Histo.rubik->GetYaxis( )->SetLabelSize(0.08);
 	}
 			
 	c1->Update( );
@@ -785,11 +796,9 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 
 ///
 void FillHisto(int ch,  uint32_t ev, Histograms_t *Histo, double &ampl){ 
-	
-		
+			
 	int BL_CUT = 20; //fNumericEntries[1]->GetNumber();
 		
-	
 	Double_t BL_mean = 0,  integral = 0;
 	ampl = 0;
 	Int_t m_stamp;
@@ -987,8 +996,7 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 
 CAEN_DGTZ_ErrorCode DataAcquisition(int N_CH, Histograms_t *Histo){
 	CAEN_DGTZ_ErrorCode ret = CAEN_DGTZ_Success;
-	
-		
+			
 	while(1) {
 		gSystem->ProcessEvents(); 
 		if (Rcfg.loop == 1){
