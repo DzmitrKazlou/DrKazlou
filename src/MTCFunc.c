@@ -744,6 +744,13 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 				Histo.charge[ch]->Draw(ch == Histo.FirstToDraw ? "HIST" : "HIST SAME");
 	}
 	
+	if (Histo.fdT == true){
+		c1->cd(Histo.cdT);
+		Histo.dt->SetLineColor(color[2]);
+		Histo.dt->Draw("HIST");
+		Histo.dt->GetXaxis()->SetTitle(" Time, ns");
+	}
+	
 	DrawTH2D(Histo.fIA, Histo.int_ampl, Histo.cIA, Histo.h2Style);//Histo.h2Style
 	DrawTH2D(Histo.fPSD_ampl, Histo.psd_ampl, Histo.cPSD_ampl, Histo.h2Style);
 	DrawTH2D(Histo.fPSD_int, Histo.psd_int, Histo.cPSD_int, Histo.h2Style);
@@ -963,6 +970,13 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 					printf("XY : %d %d\n", hits[0], hits[1]);
 			}
 		}		
+		
+		if (Histo->fdT){
+			double dt = (Events[1][0].TimeTag > Events[0][0].TimeTag) ? (double)(Events[1][0].TimeTag - Events[0][0].TimeTag) : (double)(Events[0][0].TimeTag - Events[1][0].TimeTag);
+			if (Rcfg.fPrint)
+				printf(" [1] %d [0] %d dt %f ns  \n", Events[1][0].TimeTag, Events[0][0].TimeTag, dt); //dt/1000
+			Histo->dt->Fill(dt);
+		}
 		
 		if (Histo->fRubik && Rcfg.Nev!=0){
 			Histo->rubik->Reset("ICESM" );
