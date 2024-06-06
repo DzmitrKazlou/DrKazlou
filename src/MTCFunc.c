@@ -990,11 +990,14 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 					if (Histo->fdT && ch == 1){
 						uint64_t time_ps0 = ( ( (uint64_t)(Events[0][ev].Extras & 0xFFFF0000)<<16) + Events[0][ev].TimeTag ) * 1000 * 2 + 2 * (Events[0][ev].Extras &~ 0xFFFFFC00); // extra time in picoseconds
 						uint64_t time_ps1 = ( ( (uint64_t)(Events[1][ev].Extras & 0xFFFF0000)<<16) + Events[1][ev].TimeTag ) * 1000 * 2 + 2 * (Events[1][ev].Extras &~ 0xFFFFFC00); // extra time in picoseconds
+						
+						uint32_t timetag0 = 2 * Events[0][ev].TimeTag;
+						uint32_t timetag1 = 2 * Events[1][ev].TimeTag;
 						uint32_t fine0 = 2 * (Events[0][ev].Extras &~ 0xFFFFFC00);
 						uint32_t fine1 = 2 * (Events[1][ev].Extras &~ 0xFFFFFC00);
 						double dt = (double)(time_ps1 - time_ps0) / 1000;
 						if (Rcfg.fPrint)
-							printf(" [0] %ld [1] %ld  [f0] %d [f1] %d dt %f ns  \n", time_ps0, time_ps1, fine0, fine1, dt); //dt/1000
+							printf(" [0] %ld [1] %ld  [t0] %d [t1] %d [f0] %d [f1] %d dt %f ns  \n", time_ps0, time_ps1, timetag0, timetag1, fine0, fine1, dt); //dt/1000
 						Histo->dt->Fill(dt);
 				    }
 									
