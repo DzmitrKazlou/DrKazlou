@@ -382,7 +382,7 @@ void MainFrame::DoCheckBox(){
 			Histo.cXY = Histo.NPad - (Histo.fRubik ? 1 : 0);
 		
 		if (Histo.fRubik)
-			Histo.fRubik = Histo.NPad;
+			Histo.cRubik = Histo.NPad;
 		
 		c1->Clear( );
 		c1->SetGrid( );
