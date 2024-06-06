@@ -312,7 +312,7 @@ void MainFrame::DoCheckBox(){
    //Timer checkbox
 	if (id == 20 ) {
 	   fNumericEntries[4]->SetState( fCTime->GetState() == kButtonDown ? kTRUE : kFALSE );
-	   Rcfg.fTimer = fSTCheck->GetState( ) == kButtonDown ? true : false;
+	   Rcfg.fTimer = fCTime->GetState( ) == kButtonDown ? true : false;
 	}  
 	
 	if (id < MAX_CH ) {
