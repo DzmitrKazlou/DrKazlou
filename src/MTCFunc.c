@@ -937,7 +937,9 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 		
 		Rcfg.Nev = 0;
 		hits.clear( );
-			
+//		
+// previous channel based output
+/*		
 		for (int ch=0; ch<N_CH; ch++) { 
 			ampl[ch] = 0;
 			Histo->trace[ch]->Reset("ICESM");
@@ -957,8 +959,53 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 			if ( ampl[ch] > 0 )
 				hits.push_back(ch);
 		}// channels loop
+*/		
+// previous channel based output
+//				
+//	
+//num events based output
+//
+		int MaxNumEvents = 0;
+		for(int ch=0; ch<N_CH; ch++) 
+			if (Dcfg.ChannelMask & (1<<ch) ){
+				if (MaxNumEvents<NumEvents[ch])
+					MaxNumEvents = NumEvents[ch];
+				printf("NumEvents[%i] %i \n",ch, NumEvents[ch]);
+			}    
 		
-		
+		for (uint32_t ev=0; ev<MaxNumEvents; ev++) {
+			for (int ch=0; ch<N_CH; ch++) {
+			  
+				if ( (Dcfg.ChannelMask & (1<<ch)) && (ev < NumEvents[ch]) ){
+					if (ev ==0 )
+						Rcfg.Nev +=(int)NumEvents[ch];
+					ampl[ch] = 0;
+					Histo->trace[ch]->Reset("ICESM");
+
+				    CAEN_DGTZ_DecodeDPPWaveforms(handle, (void**)&Events[ch][ev], Waveforms);
+					Rcfg.TrgCnt[ch]++;
+					
+					FillHisto(ch, ev, Histo, ampl[ch]); // all data performance
+
+					if (Histo->fdT && ch == 1){
+						uint64_t time_ps0 = ( ( (uint64_t)(Events[0][ev].Extras & 0xFFFF0000)<<16) + Events[0][ev].TimeTag ) * 1000 * 2 + 2 * (Events[0][ev].Extras &~ 0xFFFFFC00); // extra time in picoseconds
+						uint64_t time_ps1 = ( ( (uint64_t)(Events[1][ev].Extras & 0xFFFF0000)<<16) + Events[1][ev].TimeTag ) * 1000 * 2 + 2 * (Events[1][ev].Extras &~ 0xFFFFFC00); // extra time in picoseconds
+						double dt = (double)(time_ps1 - time_ps0) / 1000;
+						if (Rcfg.fPrint)
+							printf(" [1] %ld [0] %ld dt %f ns  \n", time_ps0, time_ps1, dt); //dt/1000
+						Histo->dt->Fill(dt);
+				    }
+									
+					if (ampl[ch] > 0)
+						hits.push_back(ch); // collect hits
+					gSystem->ProcessEvents();
+			    }// check enabled channels		
+			} // channels loop
+		}// events loop
+	//	
+	//num events based output
+	
+	
 		if (Histo->fXY){
 			if (Rcfg.fPrint)
 				printf("Mult : %lu\n", hits.size( ) );
@@ -971,12 +1018,14 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 			}
 		}		
 		
+		/*
 		if (Histo->fdT){
 			double dt = (Events[1][0].TimeTag > Events[0][0].TimeTag) ? (double)(Events[1][0].TimeTag - Events[0][0].TimeTag) : (double)(Events[0][0].TimeTag - Events[1][0].TimeTag);
 			if (Rcfg.fPrint)
 				printf(" [1] %d [0] %d dt %f ns  \n", Events[1][0].TimeTag, Events[0][0].TimeTag, dt); //dt/1000
 			Histo->dt->Fill(dt);
 		}
+		*/
 		
 		if (Histo->fRubik && Rcfg.Nev!=0){
 			Histo->rubik->Reset("ICESM" );
