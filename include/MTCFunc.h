@@ -83,7 +83,7 @@ typedef struct
 	bool fBL, fTrace, fCharge, fAmpl, fInt, fdT, fPSD_ampl, fPSD_int, fQsl, fIA, fLayers, fLayersCoeff, fCounts, fXY, fRubik;  // flags for every time of histograms
 	
 	int CH_2D; // channel to draw th2d
-	TH1D *dt;	
+	TH1D *dt, *counts, *layers;	
 	TH1D *trace[MAX_CH], *ampl[MAX_CH], *integral[MAX_CH], *charge[MAX_CH];
 	TH2D *int_ampl, *psd_ampl, *psd_int, *qs_ql; 
 		

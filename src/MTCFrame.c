@@ -371,6 +371,9 @@ void MainFrame::DoCheckBox(){
 		if (Histo.fQsl)	
 			Histo.cQsl = 1 + (Histo.fTrace ? 1 : 0) + (Histo.fAmpl ? 1 : 0) + (Histo.fInt ? 1 : 0) + (Histo.fCharge ? 1 : 0) + (Histo.fdT ? 1 : 0) + (Histo.fIA ? 1 : 0) + (Histo.fPSD_ampl ? 1 : 0) + (Histo.fPSD_int ? 1 : 0);
 		
+		if (Histo.fCounts)
+			Histo.cCounts = Histo.NPad - (Histo.fRubik ? 1 : 0) - (Histo.fXY ? 1 : 0);
+		
 		c1->Clear( );
 		c1->SetGrid( );
 		
@@ -482,7 +485,9 @@ void MainFrame::ClearHisto()
 	Histo.psd_int->Reset("ICESM");
 	Histo.int_ampl->Reset("ICESM");
 	Histo.qs_ql->Reset("ICESM");
+	
 	Histo.dt->Reset("ICESM");		
+	Histo.counts->Reset("ICESM");		
 			
 //	ec_out = 0;
 	

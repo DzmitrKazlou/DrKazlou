@@ -1,5 +1,3 @@
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
@@ -71,81 +69,7 @@ using namespace std;
 /*
 void MainFrame::FillHisto(Int_t ch, Double_t &ampl, uint32_t timestamp){ 
 	
-	bool fPSD_ampl  = fC[6]->GetState() == kButtonDown ? true : false; // psd vs ampl
-	bool fPSD_int  = fC[7]->GetState() == kButtonDown ? true : false; // psd vs int
-	bool fQsl  = fC[8]->GetState() == kButtonDown ? true : false; // qs vs ql
-	
-	Int_t BL_CUT = fNumericEntries[1]->GetNumber();
-	bool BL_flag  = fC[0]->GetState() == kButtonDown ? true : false;
-	CH_2D = fNumericEntries[3]->GetNumber();	
-	
-	Double_t BL_mean = 0,  integral = 0;
-	ampl = 0;
-	Int_t m_stamp;
-	Double_t psd_val =0, Qs = 0, Ql = 0;
-	
-	//Int_t PSD_BIN = 2;
-	Int_t p = Dcfg.PulsePolarity[ch] == CAEN_DGTZ_PulsePolarityPositive ? 1: -1; //POLARITY
-	
-	vector <Double_t> vec, vec_bl; 
-	uint16_t *WaveLine;
-	WaveLine = Waveforms->Trace1;
 		
-	h_trace[ch]->Reset("ICESM");	
-			
-		for (int j=0; j<(int)Waveforms->Ns; j++)
-			vec_bl.push_back((double)WaveLine[j]);
-	
-		for ( int j=0; j<BL_CUT; j++)
-			BL_mean = BL_mean + vec_bl[j];	
-		BL_mean /= BL_CUT;	
-		
-		
-		for ( int j=0; j<vec_bl.size( ); j++){
-						
-			vec.push_back(vec_bl[j] - BL_mean);
-						
-			if (vec[j] * p > ampl){
-				ampl = vec[j] * p;
-				m_stamp = j;
-			}	
-			
-			if (j * b_width > LBound && j * b_width < RBound)
-				integral += vec[j] * p;
-		}
-		
-		if ( ( (fPSD_ampl == true) || (fPSD_int == true) || (fQsl == true)  )  && (ch == CH_2D) ){
-			for (int j=m_stamp; j<vec.size( ); j++){
-				if (j<(m_stamp + PSD_BIN) )
-					Qs = Qs + p * vec[j];
-				Ql = Ql + p * vec[j];
-			}
-			psd_val = 1 - ( Qs/Ql );
-			
-			if (fPSD_ampl == true) 
-				h_psd_ampl->Fill(ampl, psd_val);
-			if (fPSD_int == true) 
-				h_psd_int->Fill(integral, psd_val);	
-			if (fQsl == true) 
-				h_qs_ql->Fill(Ql, Qs);	
-		}
-		
-		h_integral[ch]->Fill(integral);
-		h_ampl[ch]->Fill(ampl);
-		if (ch == CH_2D)
-			h_int_ampl->Fill(ampl, integral);
-		
-		if (fPrint == true)
-			printf(" CH[%i]  Ampl %0.2f Time %d PSD %lg Qs %lg Ql %lg \n", ch, ampl, timestamp, psd_val, Qs, Ql);	
-		
-			if (BL_flag == true){
-				for ( int j=0; j<vec.size( ); j++)
-					h_trace[ch]->Fill(j * b_width, vec[j]);
-			}
-			else{
-				for ( int j=0; j<vec_bl.size( ); j++)
-					h_trace[ch]->Fill(j * b_width, vec_bl[j]);
-			}	
 				
 		if (fSTCheck->GetState() == kButtonDown){
 			ch_out = ch;
@@ -165,157 +89,7 @@ void MainFrame::FillHisto(Int_t ch, Double_t &ampl, uint32_t timestamp){
 
 /*
 void MainFrame::DrawHisto( ){
-	char str[20], h2Style[5] ="COLZ";
-		
-	if (WF_XMAX > Dcfg.RecordLength[0] * b_width)
-		WF_XMAX = Dcfg.RecordLength[0];
 	
-	Int_t ChBoxFlag = 0, lCH = MAX_CH, cAmpl, cInt, cdT, cPSD_ampl = 0, cPSD_int = 0, cQsl = 0, cIA = 0, cRubik;
-	for (int i = 1; i<10; i++)
-		if (fC[i]->GetState() == kButtonDown) 
-			//i < 6 ? ChBoxFlag++ : ChBoxFlag += 2;
-			ChBoxFlag++;
-		
-	bool dCH[MAX_CH];
-	for (int i = 0; i<N_CH; i++){
-		dCH[i] = fCa[i]->GetState() == kButtonDown ? true : false;
-		if (fCa[i]->GetState() == kButtonDown && i<lCH) 
-			lCH = i;
-	}
-	
-	bool fTrace  = fC[1]->GetState() == kButtonDown ? true : false;
-	bool fAmpl  = fC[2]->GetState() == kButtonDown ? true : false;
-	bool fInt  = fC[3]->GetState() == kButtonDown ? true : false;
-	bool fdT  = fC[4]->GetState() == kButtonDown ? true : false;
-	bool fRubik  = fC[5]->GetState() == kButtonDown ? true : false;
-	bool fPSD_ampl  = fC[6]->GetState() == kButtonDown ? true : false;
-	bool fPSD_int  = fC[7]->GetState() == kButtonDown ? true : false;
-	bool fQsl  = fC[8]->GetState() == kButtonDown ? true : false;
-	bool fIA  = fC[9]->GetState() == kButtonDown ? true : false;
-	
-	if (fTrace == true && ChBoxFlag >1)
-		cAmpl = 2;
-	if (fTrace == false && fAmpl == true)
-		cAmpl = 1;
-	
-	if (fTrace == true && fAmpl == true && fInt ==true)
-		cInt= 3;
-	if (fTrace == true && fAmpl == false && fInt ==true)
-		cInt= 2;
-	if (fTrace == false && fAmpl == true && fInt ==true)
-		cInt = 2;
-	if (fTrace == false && fAmpl == false && fInt ==true)
-		cInt = 1;
-	
-	if (ChBoxFlag ==1){
-		cPSD_ampl = 1;
-		cPSD_int = 1;
-		cQsl = 1;
-		cIA = 1;
-		cdT = 1;
-		cRubik = 1;
-	}
-	else{
-		if (fQsl == true)
-			cQsl = ChBoxFlag;
-		if (fPSD_int == true)
-			cPSD_int = ChBoxFlag - 1 * (fQsl == true ? 1 : 0);
-		if (fPSD_ampl == true)
-			cPSD_ampl = ChBoxFlag - 1 * (fQsl == true ? 1 : 0)  - 1 * (fPSD_int == true ? 1 : 0);
-		if (fIA == true)
-			cIA = ChBoxFlag - 1 * (fQsl == true ? 1 : 0)  - 1 * (fPSD_int == true ? 1 : 0) - 1 * (fPSD_ampl == true ? 1 : 0);
-		cdT = ChBoxFlag;
-		cRubik = ChBoxFlag;
-	}
-	
-	c1->Clear();
-	
-	c1->SetGrid( );
-		
-	
-	if (ChBoxFlag == 1)
-		c1->Divide(1, 1, 0.001, 0.001);
-	if (ChBoxFlag == 2)
-		c1->Divide(2, 1, 0.001, 0.001);
-	if (ChBoxFlag > 2 && ChBoxFlag < 5)
-		c1->Divide(2, 2, 0.001, 0.001);
-	if (ChBoxFlag > 4 && ChBoxFlag < 7)
-		c1->Divide(3, 2, 0.001, 0.001);
-	if (ChBoxFlag > 6)
-		c1->Divide(3, 3, 0.001, 0.001);
-	
-	c1->Modified();
-	
-	if (fTrace == true){
-		c1->cd(1);
-		for (int i=lCH; i<N_CH; i++){ //(int)BoardInfo.Channels
-			if (dCH[i] == true){
-				h_trace[i]->SetLineColor(color[i]);
-				if (i == lCH){
-					h_trace[i]->Draw("HIST");
-					h_trace[i]->GetYaxis()->SetRangeUser(WF_YMIN, WF_YMAX);
-					h_trace[i]->GetYaxis()->SetTitleOffset(1.1);
-					h_trace[i]->GetYaxis()->SetTitle(" Channels, lbs");
-					h_trace[i]->GetXaxis()->SetRangeUser(WF_XMIN, WF_XMAX);
-					h_trace[i]->GetXaxis()->SetTitle(" Time, ns");
-				}	
-				else	
-					h_trace[i]->Draw("HIST SAME");
-			}
-		}
-	}	
-	
-	if (fAmpl == true){
-		c1->cd(cAmpl);
-		for (int i=lCH; i<N_CH; i++){
-			if (dCH[i] == true){
-				h_ampl[i]->SetLineColor(color[i]);
-			
-				if (i	== lCH)
-					h_ampl[i]->Draw("HIST");
-				else
-					h_ampl[i]->Draw("HIST SAME");	
-			}
-		}	
-	}
-		
-	if (fInt == true){		
-		c1->cd(cInt);
-		for (int i=lCH; i<N_CH; i++){
-			if (dCH[i] == true){
-				h_integral[i]->SetLineColor(color[i]);
-			
-				if (i	== lCH)
-					h_integral[i]->Draw("HIST");
-				else
-					h_integral[i]->Draw("HIST SAME");	
-			}	
-		}	
-	}
-	
-	if (fdT == true){
-		c1->cd(cdT);
-		h_dt->SetLineColor(color[2]);
-		h_dt->Draw("HIST");
-		h_dt->GetXaxis()->SetTitle(" Time, ns");
-	}			
-	
-	if (fIA == true){
-		c1->cd(cIA);
-		h_int_ampl->SetMarkerStyle(21);
-		h_int_ampl->SetMarkerSize(0.4);
-		h_int_ampl->SetMarkerColor(kBlue);
-		h_int_ampl->Draw(h2Style);
-	}	
-	
-	
-	if (fPSD_ampl == true){
-		c1->cd(cPSD_ampl);
-		h_psd_ampl->SetMarkerStyle(21);
-		h_psd_ampl->SetMarkerSize(0.4);
-		h_psd_ampl->SetMarkerColor(kBlue);
-		h_psd_ampl->Draw(h2Style);
-	}		
 	
 	
 	if (fRubik == true){
@@ -328,29 +102,7 @@ void MainFrame::DrawHisto( ){
 		h_rubik->GetYaxis()->SetLabelSize(0.08);
 	}
 	
-	if (fPSD_int == true){
-		c1->cd(cPSD_int);
-		h_psd_int->SetMarkerStyle(21);
-		h_psd_int->SetMarkerSize(0.4);
-		h_psd_int->SetMarkerColor(kBlue);
-		h_psd_int->Draw(h2Style);
-	}		
 	
-	if (fQsl == true){
-		c1->cd(cQsl);
-		h_qs_ql->SetMarkerStyle(21);
-		h_qs_ql->SetMarkerSize(0.4);
-		h_qs_ql->SetMarkerColor(kBlue);
-		h_qs_ql->Draw(h2Style);
-	}		
-	
-	if (fIA == true){
-		c1->cd(cIA);
-		h_int_ampl->SetMarkerStyle(21);
-		h_int_ampl->SetMarkerSize(0.4);
-		h_int_ampl->SetMarkerColor(kBlue);
-		h_int_ampl->Draw(h2Style);
-	}	
 	
 	
 	c1->Update( );
