@@ -879,8 +879,8 @@ void FillHisto(int ch,  uint32_t ev, Histograms_t *Histo, double &ampl){
 		if (Histo->fIA && ch == Histo->CH_2D)
 			Histo->int_ampl->Fill(ampl, integral);
 		
-		if(Rcfg.fPrint)
-			printf(" ev[%i]  ch[%i] ampl %f Qs %f Ql %f  PSD %f \n", ev, ch, ampl, Qs, Ql, psd_val);
+		//if(Rcfg.fPrint)
+		//	printf(" ev[%i]  ch[%i] ampl %f Qs %f Ql %f  PSD %f \n", ev, ch, ampl, Qs, Ql, psd_val);
 		
 		vec.clear();
 		vec_bl.clear();
@@ -970,7 +970,7 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 			if (Dcfg.ChannelMask & (1<<ch) ){
 				if (MaxNumEvents<NumEvents[ch])
 					MaxNumEvents = NumEvents[ch];
-				printf("NumEvents[%i] %i \n",ch, NumEvents[ch]);
+				//printf("NumEvents[%i] %i \n",ch, NumEvents[ch]);
 			}    
 		
 		for (uint32_t ev=0; ev<MaxNumEvents; ev++) {
@@ -990,9 +990,11 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 					if (Histo->fdT && ch == 1){
 						uint64_t time_ps0 = ( ( (uint64_t)(Events[0][ev].Extras & 0xFFFF0000)<<16) + Events[0][ev].TimeTag ) * 1000 * 2 + 2 * (Events[0][ev].Extras &~ 0xFFFFFC00); // extra time in picoseconds
 						uint64_t time_ps1 = ( ( (uint64_t)(Events[1][ev].Extras & 0xFFFF0000)<<16) + Events[1][ev].TimeTag ) * 1000 * 2 + 2 * (Events[1][ev].Extras &~ 0xFFFFFC00); // extra time in picoseconds
+						uint32_t fine0 = 2 * (Events[0][ev].Extras &~ 0xFFFFFC00);
+						uint32_t fine1 = 2 * (Events[1][ev].Extras &~ 0xFFFFFC00);
 						double dt = (double)(time_ps1 - time_ps0) / 1000;
 						if (Rcfg.fPrint)
-							printf(" [1] %ld [0] %ld dt %f ns  \n", time_ps0, time_ps1, dt); //dt/1000
+							printf(" [0] %ld [1] %ld  [f0] %d [f1] %d dt %f ns  \n", time_ps0, time_ps1, fine0, fine1, dt); //dt/1000
 						Histo->dt->Fill(dt);
 				    }
 									
