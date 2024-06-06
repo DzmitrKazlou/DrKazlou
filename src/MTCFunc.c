@@ -49,12 +49,15 @@ long get_time()
 
 void CalcRate(int N_CH, uint64_t &PrevRateTime){
 	char CName[100];
-	uint64_t CurrentTime, ElapsedTime;
+	uint64_t CurrentTime, ElapsedTime, DAQTime;
 			CurrentTime = get_time();
         	ElapsedTime = CurrentTime - PrevRateTime;
+			DAQTime = (CurrentTime - Rcfg.StartTime) / 1000;
+			if (Rcfg.fTimer && DAQTime > Rcfg.timer_val)
+				Rcfg.loop = 0;
 					        	
 			if (ElapsedTime > 1000) { // 1000
-				sprintf(CName,"T: %li s",  (CurrentTime - Rcfg.StartTime) / 1000 );
+				sprintf(CName,"T: %li s",  DAQTime );
 				//printf("%s \n", CName);
 				Rcfg.TLabel->SetText(CName);
 				gSystem->ProcessEvents(); 
@@ -706,6 +709,7 @@ void DrawTH2D(bool flag, TH2D *h, int cPos, char *opt){
 	}		
 	
 }
+
 void DrawHisto(Histograms_t Histo, int N_CH){
 			
 	if (Histo.fTrace){
@@ -1012,7 +1016,7 @@ CAEN_DGTZ_ErrorCode DataAcquisition(int N_CH, Histograms_t *Histo){
 		
 		if (Rcfg.loop == 0){
 			ret = CAEN_DGTZ_SWStopAcquisition(handle);
-			//printf("Stop acquisition %i \n", ret);
+			printf("Acquisition stopped \n");
 			Rcfg.loop = -1;
 		}
 	}

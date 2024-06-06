@@ -414,6 +414,7 @@ void MainFrame::DoSetVal(){
 	//N_CH = fNumericEntries[0]->GetNumber( );
 	Rcfg.DrawTime = fNumericEntries[2]->GetNumber( );
 	Histo.CH_2D = fNumericEntries[3]->GetNumber();
+	Rcfg.timer_val = fNumericEntries[4]->GetNumber( );
 	
 }
 
