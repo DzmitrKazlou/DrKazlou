@@ -499,6 +499,7 @@ void MainFrame::ClearHisto()
 	Histo.dt->Reset("ICESM");		
 	Histo.layers->Reset("ICESM");		
 	Histo.counts->Reset("ICESM");		
+	Histo.xy->Reset("ICESM");		
 			
 //	ec_out = 0;
 	

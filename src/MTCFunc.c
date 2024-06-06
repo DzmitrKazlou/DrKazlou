@@ -690,6 +690,8 @@ void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH){
 	Histo->psd_ampl = new TH2D("h_psd_ampl", "h_psd_ampl", 1000, 0, 16384, 1000, 0, 1);
 	Histo->psd_int = new TH2D("h_psd_int", "h_psd_int", 1000, 0, 1000000, 1000, 0, 1);
 	Histo->qs_ql = new TH2D("h_qs_ql", "h_qs_ql", 1000, 0, 50000, 1000, 0, 100000);
+	Histo->xy = new TH2D("h_xy", "h_xy", 16, 0, 16, 16, 0, 16);
+	//Histo->rubik = new TH2D("h_rubik", "h_rubik", 5, 5, 10, 5, 0, 5);
 	
 }
 
@@ -767,8 +769,17 @@ void DrawHisto(Histograms_t Histo, int N_CH){
 		Histo.counts->SetBarWidth(0.95);
 	}	
 	
-	
-		
+	if (Histo.fXY){
+		c1->cd(Histo.cXY);
+		char str[20];
+		sprintf(str,"Ecanvas1_%i", Histo.cXY);
+		TPad *pad = (TPad*)c1->GetPrimitive(str);
+		pad->SetGrid( );
+		Histo.xy->Draw("COLZ");
+		Histo.xy->GetXaxis()->SetLabelSize(0.08);
+		Histo.xy->GetYaxis()->SetLabelSize(0.08);
+	}
+			
 	c1->Update( );
 }
 
@@ -862,9 +873,17 @@ void FillHisto(int ch,  uint32_t ev, Histograms_t *Histo, double &ampl){
 void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){	
 	CAEN_DGTZ_ErrorCode ret = CAEN_DGTZ_Success;	
 		
-	
 	uint32_t BufferSize, NumEvents[MAX_CH];	
 	uint64_t PrevRateTime = get_time(), PrevDrawTime;
+	double ampl[N_CH];
+	vector <int> hits{};
+	
+	const char* xlabel[5] = {"5", "6", "7", "8", "9"};
+	const char* ylabel[5] = {"0", "1", "2", "3", "4"};
+	
+	if (Histo->fRubik)
+		for (Int_t i=0; i<5; i++)
+			Histo->rubik->Fill(xlabel[i], ylabel[i], 0);
 		
 	while(Rcfg.loop == 1) {
 		// Calculate throughput and trigger rate (every second) 		
@@ -879,13 +898,10 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
         }
 		
 		//printf("BufferSize: %d\n", BufferSize);	
-        
-		
+        		
         if (BufferSize == 0) 
 			continue;
-		
-		
-		
+				
 		Rcfg.Nb += BufferSize;
 		
 		ret = CAEN_DGTZ_GetDPPEvents(handle, buffer, BufferSize, (void**)&Events, NumEvents);
@@ -900,9 +916,10 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 			printf(" ---------------------------------------- \n");			
 		
 		Rcfg.Nev = 0;
+		hits.clear( );
 			
 		for (int ch=0; ch<N_CH; ch++) { 
-			//ampl[ch] = 0;
+			ampl[ch] = 0;
 			Histo->trace[ch]->Reset("ICESM");
 			if (Dcfg.ChannelMask & (1<<ch) ){
 				Rcfg.Nev +=(int)NumEvents[ch];
@@ -910,20 +927,46 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 				
 					CAEN_DGTZ_DecodeDPPWaveforms(handle, (void**)&Events[ch][ev], Waveforms);
 					Rcfg.TrgCnt[ch]++;
-					
-					Double_t a_val;
-					
-					FillHisto(ch, ev, Histo, a_val); // all data performance
-					
-									   					
+										
+					FillHisto(ch, ev, Histo, ampl[ch]); // all data performance
+														   					
 					gSystem->ProcessEvents(); 
 				} // events loop
 		
 			} // check enabled channels
-			
+			if ( ampl[ch] > 0 )
+				hits.push_back(ch);
 		}// channels loop
-						
 		
+		
+		if (Histo->fXY){
+			if (Rcfg.fPrint)
+				printf("Mult : %lu\n", hits.size( ) );
+
+			if (hits.size() == 2){
+				// Discard evts with ambiguous hits
+				Histo->xy->Fill(hits[0], hits[1]);
+				if (Rcfg.fPrint)
+					printf("XY : %d %d\n", hits[0], hits[1]);
+			}
+		}		
+		
+		if (Histo->fRubik && Rcfg.Nev!=0){
+			Histo->rubik->Reset("ICESM" );
+			
+			for (int ch=0; ch<N_CH; ch++){
+				if (ampl[ch] > 0 && ch < 5) {
+					for (int i=0; i<5; i++)
+						Histo->rubik->Fill(xlabel[i], ylabel[ch], 1);
+				}
+				if (ampl[ch] > 0 && ch >= 5) {
+					for (int i=0; i<5; i++)
+						Histo->rubik->Fill(xlabel[ch-5], ylabel[i], 1);
+				}
+			}
+		}	
+		
+		// check elapsed time before drawing
 		if ( (get_time() - PrevDrawTime) >= Rcfg.DrawTime*1000 && Rcfg.Nev!=0){	
 			DrawHisto(*Histo, N_CH);	
 			PrevDrawTime = get_time();

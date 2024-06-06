@@ -86,7 +86,7 @@ typedef struct
 	double layers_coeff[MAX_CH];
 	TH1D *dt, *counts, *layers;	
 	TH1D *trace[MAX_CH], *ampl[MAX_CH], *integral[MAX_CH], *charge[MAX_CH];
-	TH2D *int_ampl, *psd_ampl, *psd_int, *qs_ql; 
+	TH2D *int_ampl, *psd_ampl, *psd_int, *qs_ql, *xy, *rubik; 
 		
 	int PSD_BIN;
 		
