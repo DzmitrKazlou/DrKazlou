@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <vector>
 
 #include <../include/CAENDigitizerType.h>
 #include "CAENDigitizer.h"
@@ -93,6 +94,11 @@ typedef struct
 	TH2D *int_ampl, *psd_ampl, *psd_int, *qs_ql, *xy, *rubik; 
 		
 	int PSD_BIN;
+	
+	int evt, evt_out, ch_out;
+	uint32_t ext_out, tst_out;
+	uint64_t time_out;
+	std::vector <double> vec_bl, vec;
 		
 } Histograms_t;
 

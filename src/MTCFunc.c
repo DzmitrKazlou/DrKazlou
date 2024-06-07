@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <vector>
+//#include <vector>
 #include <../include/CAENDigitizerType.h>
 #include "CAENDigitizer.h"
 #include "MTCFunc.h"
@@ -651,7 +651,7 @@ void InitReadoutConfig(ReadoutConfig_t *Rcfg, int N_CH){
 
 void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH){
 	char str[100];
-	
+		
 	Histo->WF_XMIN = 0, Histo->WF_XMAX = RecordLength[0] * b_width;
 	Histo->WF_YMIN = -500, Histo->WF_YMAX = 1000;
 	Histo->ALBound = 0, Histo->ARBound = RecordLength[0] * b_width;
@@ -822,39 +822,39 @@ void FillHisto(int ch,  uint32_t ev, Histograms_t *Histo, double &ampl){
 		
 	Int_t p = Dcfg.PulsePolarity[ch] == CAEN_DGTZ_PulsePolarityPositive ? 1: -1; //POLARITY
 		
-	vector <double> vec, vec_bl; 
+	//vector <double> vec, vec_bl; 
 	uint16_t *WaveLine;
 	WaveLine = Waveforms->Trace1;
 		
 	Histo->trace[ch]->Reset("ICESM");	
 			
 		for (int j=0; j<(int)Waveforms->Ns; j++)
-			vec_bl.push_back((double)WaveLine[j]);
+			Histo->vec_bl.push_back((double)WaveLine[j]);
 	
 		for ( int j=0; j<BL_CUT; j++)
-			BL_mean = BL_mean + vec_bl[j];	
+			BL_mean = BL_mean + Histo->vec_bl[j];	
 		BL_mean /= BL_CUT;	
 		
 		
-		for ( int j=0; j<vec_bl.size( ); j++){
-			vec.push_back(vec_bl[j] - BL_mean);
+		for ( int j=0; j<Histo->vec_bl.size( ); j++){
+			Histo->vec.push_back(Histo->vec_bl[j] - BL_mean);
 						
-			if (vec[j] * p > ampl && j * b_width > Histo->ALBound && j * b_width < Histo->ARBound){
-				ampl = vec[j] * p;
+			if (Histo->vec[j] * p > ampl && j * b_width > Histo->ALBound && j * b_width < Histo->ARBound){
+				ampl = Histo->vec[j] * p;
 				m_stamp = j;
 			}	
 			
 			if (j * b_width > Histo->ILBound && j * b_width < Histo->IRBound)
-				integral += vec[j] * p;
+				integral += Histo->vec[j] * p;
 		}
 		
 		if (Histo->fBL){
-				for ( int j=0; j<vec.size( ); j++)
-					Histo->trace[ch]->Fill(j * b_width, vec[j]);
+				for ( int j=0; j<Histo->vec.size( ); j++)
+					Histo->trace[ch]->Fill(j * b_width, Histo->vec[j]);
 			}
 			else{
-				for ( int j=0; j<vec_bl.size( ); j++)
-					Histo->trace[ch]->Fill(j * b_width, vec_bl[j]);
+				for ( int j=0; j<Histo->vec_bl.size( ); j++)
+					Histo->trace[ch]->Fill(j * b_width, Histo->vec_bl[j]);
 			}	
 				
 		Histo->integral[ch]->Fill(integral);
@@ -862,10 +862,10 @@ void FillHisto(int ch,  uint32_t ev, Histograms_t *Histo, double &ampl){
 		
 		//PSD
 		if ( ( (Histo->fPSD_ampl) || (Histo->fPSD_int) || (Histo->fQsl)  )  && (ch == Histo->CH_2D) ){
-			for (int j=m_stamp; j<vec.size( ); j++){
+			for (int j=m_stamp; j<Histo->vec.size( ); j++){
 				if (j<(m_stamp + Histo->PSD_BIN) )
-					Qs = Qs + p * vec[j];
-				Ql = Ql + p * vec[j];
+					Qs = Qs + p * Histo->vec[j];
+				Ql = Ql + p * Histo->vec[j];
 			}
 			psd_val = 1 - ( Qs/Ql );
 			
@@ -886,9 +886,19 @@ void FillHisto(int ch,  uint32_t ev, Histograms_t *Histo, double &ampl){
 		
 		//if(Rcfg.fPrint)
 		//	printf(" ev[%i]  ch[%i] ampl %f Qs %f Ql %f  PSD %f \n", ev, ch, ampl, Qs, Ql, psd_val);
+		if ( Rcfg.fStoreTraces){
+			//evt_out = evt;
+			//ch_out = ch;
+			//ext_out = extras;
+			//tst_out = timestamp;
+			//time_out = time_ps;
+			//v_out.push_back(vec);	
+			Rcfg.tree->Fill( );
+			
+		}	
 		
-		vec.clear();
-		vec_bl.clear();
+		Histo->vec.clear( );
+		Histo->vec_bl.clear( );
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -991,6 +1001,15 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 					Rcfg.TrgCnt[ch]++;
 					
 					FillHisto(ch, ev, Histo, ampl[ch]); // all data performance
+					if (Rcfg.fStoreTraces){
+						//evt_out = evt;
+						Histo->ch_out = ch;
+						Histo->ext_out = Events[ch][ev].Extras & 0xFFFF0000;
+						Histo->tst_out = Events[ch][ev].TimeTag;
+						uint64_t time_ps = ( ( (uint64_t)(Events[ch][ev].Extras & 0xFFFF0000)<<16) + Events[ch][ev].TimeTag ) * 1000 * 2 + 2 * (Events[ch][ev].Extras &~ 0xFFFFFC00); // extra time in picoseconds
+						Histo->time_out = time_ps;
+					}
+					
 					if (Rcfg.fPrint)
 						printf(" ch[%i] ev[%i] ampl %f TimeTag %d \n", ch, ev, ampl[ch], Events[ch][ev].TimeTag);
 
@@ -1018,7 +1037,8 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 		}// events loop
 	//	
 	//num events based output
-	
+		if (BufferSize!=0)
+			Histo->evt++;
 	
 		if (Histo->fXY){
 			if (Rcfg.fPrint)
@@ -1089,7 +1109,7 @@ CAEN_DGTZ_ErrorCode DataAcquisition(int N_CH, Histograms_t *Histo){
 		}
 		
 		if (Rcfg.loop == 0){
-			ret = CAEN_DGTZ_SWStopAcquisition(handle);
+			//ret = CAEN_DGTZ_SWStopAcquisition(handle);
 			printf("Acquisition stopped \n");
 			Rcfg.loop = -1;
 		}

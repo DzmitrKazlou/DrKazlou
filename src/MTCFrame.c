@@ -533,7 +533,7 @@ void MainFrame::ClearHisto()
 	Histo.counts->Reset("ICESM");		
 	Histo.xy->Reset("ICESM");		
 			
-//	ec_out = 0;
+	Histo.evt = 0;
 	
 	//ret = CAEN_DGTZ_ClearData(handle); // WHAT DOES IT DO? - only crashes
 	c1->Modified( );
@@ -545,36 +545,54 @@ void MainFrame::ClearHisto()
 
 void MainFrame::StartButton()
 {	
+	char CName[100];
  	printf("Start button \n");
-		
+	bool fStart = true;	
 	Rcfg.StartTime = get_time( );
+	Histo.evt = 0;
 	
 	
-	/*
 	//Store traces if choosen
-	if (fSTCheck->GetState() == kButtonDown){
-		printf(" Traces will be saved in  : %s \n", fSTTextBuffer->GetString());
+	if (Rcfg.fStoreTraces){
+				
+		int retval;
+		// check if such file exist
 		
-		ff = TFile::Open(fSTTextBuffer->GetString(),"RECREATE");		
-		
-		tree = new TTree("vtree", "vtree");		
-		tree->Branch("EventCounter", &ec_out);
-		tree->Branch("Channel", &ch_out);
-		tree->Branch("TimeStamp", &tst_out); 
-		tree->Branch("Trace", &v_out);	 
+		if( !gSystem->AccessPathName( fSTTextBuffer->GetString( ) ) ){ //such file exist
+			sprintf(CName, "File  %s exist. \n It will be overwritten. \n Continue?", fSTTextBuffer->GetString( ));
+			new TGMsgBox(gClient->GetRoot(), fMain, "Warning", CName, kMBIconExclamation, kMBNo | kMBYes, &retval); //1 - Yes, No -2 // strange logic
+			printf("retval %d \n", retval);
+			retval == 2 ? fStart = false: fStart = true; 
+			
+			if (fStart){
+				sprintf(CName, "Traces will be saved in  \n %s", fSTTextBuffer->GetString( ));
+				new TGMsgBox(gClient->GetRoot(), fMain, "Info", CName, kMBIconAsterisk, kMBOk);
+				Rcfg.ff = TFile::Open(fSTTextBuffer->GetString(),"RECREATE");		
+				//ff = new TFile(fSTTextBuffer->GetString(),"WRITE");		
+				Rcfg.tree = new TTree("vtree", "vtree");		
+				Rcfg.tree->Branch("EventCounter", &Histo.evt);
+				Rcfg.tree->Branch("Channel", &Histo.ch_out);
+				Rcfg.tree->Branch("Extras", &Histo.ext_out);
+				Rcfg.tree->Branch("TimeTag", &Histo.tst_out);
+				Rcfg.tree->Branch("TimeStampPico", &Histo.time_out,"TimeStampPico/L" ); 
+				Rcfg.tree->Branch("Trace", &Histo.vec);	 
+			}
+		} 
+		else{
+			sprintf(CName, "Traces will be saved in  \n %s", fSTTextBuffer->GetString( ));
+			new TGMsgBox(gClient->GetRoot(), fMain, "Info", CName, kMBIconAsterisk, kMBOk);
+			Rcfg.ff = TFile::Open(fSTTextBuffer->GetString(),"RECREATE");		
+				//ff = new TFile(fSTTextBuffer->GetString(),"WRITE");		
+			Rcfg.tree = new TTree("vtree", "vtree");		
+			Rcfg.tree->Branch("EventCounter", &Histo.evt);
+			Rcfg.tree->Branch("Channel", &Histo.ch_out);
+			Rcfg.tree->Branch("Extras", &Histo.ext_out);
+			Rcfg.tree->Branch("TimeTag", &Histo.tst_out);
+			Rcfg.tree->Branch("TimeStampPico", &Histo.time_out,"TimeStampPico/L"); 
+			Rcfg.tree->Branch("Trace", &Histo.vec);	 
+		}
 	}
 	
-	
-	for (int ch = 0; ch < N_CH; ch++){
-		if (h_trace[ch])
-			delete h_trace[ch];
-		
-		sprintf(CName, "h_trace%i", ch);
-		h_trace[ch]= new TH1D(CName, CName, Dcfg.RecordLength[ch], 0, Dcfg.RecordLength[ch] * b_width);
-		
-		
-	}
-	*/
 	
 	Rcfg.loop = 1;
 	
@@ -591,14 +609,15 @@ void MainFrame::StopButton()
 	
 	Rcfg.loop = 0;
 	
-	//ret = CAEN_DGTZ_SWStopAcquisition(handle);
-	/*
-	if (fSTCheck->GetState() == kButtonDown){
-		tree->Write();
-		ff->Write();
-		printf(" Data saved as \"%s\" \n", ff->GetName() );
-	}
-	*/
+	ret = CAEN_DGTZ_SWStopAcquisition(handle);
+		
+	if (Rcfg.fStoreTraces){
+		Rcfg.tree->Write( );
+		Rcfg.ff->Write( );
+		printf(" Data saved as \"%s\" \n", Rcfg.ff->GetName( ) );
+	}	
+	
+	
 }
 
 
