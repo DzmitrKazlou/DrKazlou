@@ -17,7 +17,7 @@ extern CAEN_DGTZ_ErrorCode ret;
 	
 	extern CAEN_DGTZ_DPP_PSD_Event_t   *Events[MAX_CH];  // events buffer
 	extern CAEN_DGTZ_DPP_PSD_Waveforms_t   *Waveforms;         // waveforms buffer
-	//extern TH1D *h_trace;
+	
 	extern TCanvas	*c1;
 
 
@@ -44,12 +44,9 @@ MainFrame::MainFrame(const TGWindow *p, UInt_t w, UInt_t h)
    fMenuFile->AddEntry("L&oad config", M_LOAD_CONFIG);
    fMenuFile->AddEntry("Save &config", M_SAVE_CONFIG);
    fMenuFile->AddEntry("Save &histo", M_FILE_SAVE_HISTO);
-   //fMenuFile->AddEntry("Sa&ve traces", M_FILE_SAVE_TRACES);
    fMenuFile->AddSeparator();
    fMenuFile->AddEntry("E&xit", M_FILE_EXIT);
 	
-	//fMenuFile->DisableEntry(M_FILE_SAVE_TRACES);
-   
    fMenuOpt = new TGPopupMenu(gClient->GetRoot());
    fMenuOpt->AddEntry("&Hist options", M_OPT_MENU);
    fMenuOpt->AddEntry("&Digi parameters", M_PARAMS_MENU);
@@ -474,11 +471,40 @@ void MainFrame::InitButton()
 	//printf("handle after init %i \n", handle);
 	fInitButton->SetState (kButtonDisabled);
 	fNumericEntries[0]->SetState(kFALSE);
-	
-	//
-	
-   InitHisto(&Histo, Dcfg.RecordLength, N_CH);
 		
+   InitHisto(&Histo, Dcfg.RecordLength, N_CH);
+	
+	//check EventAggr
+	uint32_t reg_data = 0;
+	ret = CAEN_DGTZ_ReadRegister(handle, 0x800C, &reg_data);
+	printf(" Previously in  0x%08X: %08X \n", 0x800C, reg_data); //this register defines how many aggregates can be contained in the memory.
+	ret = CAEN_DGTZ_WriteRegister(handle, 0x800C, 0x2); // 0x2 - 2 (lowest value); 0xA - 1024 (highest value)
+	ret = CAEN_DGTZ_ReadRegister(handle, 0x800C, &reg_data);
+	printf(" Now in  0x%04X: %08X \n", 0x800C, reg_data);
+	
+	//Events per Aggregate
+	ret = CAEN_DGTZ_ReadRegister(handle, 0x8034, &reg_data);
+	printf(" Previously in  0x%04X: %08X \n", 0x8034, reg_data); 
+	ret = CAEN_DGTZ_WriteRegister(handle, 0x8034, 0x1); // 0x3FF - 1024 - dec (highest value)
+	ret = CAEN_DGTZ_ReadRegister(handle, 0x8034, &reg_data);
+	printf(" Now in  0x%04X: %08X \n", 0x8034, reg_data);
+	
+	
+	ret = CAEN_DGTZ_ReadRegister(handle, 0x8000, &reg_data);
+	printf(" Previously in  0x%04X: %08X \n", 0x8000, reg_data); 
+
+	uint32_t ExtraConfigAddress[MAX_CH] = { 0x1084, 0x1184, 0x1284, 0x1384, 0x1484, 0x1584, 0x1684, 0x1784,
+										   0x1884, 0x1984, 0x1A84, 0x1B84, 0x1C84, 0x1D84, 0x1E84, 0x1F84};
+	for (int ch=0; ch<N_CH; ch++){
+	  ret = CAEN_DGTZ_ReadRegister(handle, ExtraConfigAddress[ch], &reg_data);
+	  printf(" Previously [ExtraConfig] 0x%04X: %08X \n", ExtraConfigAddress[ch], reg_data);
+	  reg_data = (reg_data &~(0x700)) | (1<<9); // clean up [b10:8] and set that value to 010 - Extras = extended time stamps | flags | fine time stamps
+	  ret = CAEN_DGTZ_WriteRegister(handle, ExtraConfigAddress[ch], reg_data); 
+	  ret = CAEN_DGTZ_ReadRegister(handle, ExtraConfigAddress[ch], &reg_data);
+	  printf(" Now [ExtraConfig] 0x%04X: %08X \n", ExtraConfigAddress[ch], reg_data);
+	}
+	
+	
 	
 }
 
@@ -587,48 +613,7 @@ void MainFrame::ShowStats( ){
 				printf("%s \n", CName);
 			}	
 			gSystem->ProcessEvents(); 
-				/*
-			if (ElapsedTime > 1000) { // 1000 - 1 sec
-				sprintf(CName,"T: %li s",  (CurrentTime - Rcfg.StartTime) / 1000 );
-				printf("%s \n", CName);
-				//fTLabel->SetText(CName);
-				gSystem->ProcessEvents(); 
-            	if (Rcfg.Nb != 0){
-					sprintf(CName,"Read. %.2f MB/s ", (float)Rcfg.Nb/((float)ElapsedTime*1048.576f) );
-					printf("%s \n", CName);
-					//fStatusBar->SetText(CName, 0);
-					
-					for (int ch=0; ch<N_CH; ch++) { //8
-						if (Rcfg.TrgCnt[ch] != 0){
-							sprintf(CName, "CH[%i]: %.2f Hz ", ch, (float)Rcfg.TrgCnt[ch]*1000.0f/(float)ElapsedTime);
-							printf("%s \n", CName);
-							//if (ch < 15)
-							//	fStatusBar->SetText(CName, ch+1);
-						}
-						else{
-							sprintf(CName, "No data...");
-							printf("%s \n", CName);
-							//if (ch < 15)
-							//	fStatusBar->SetText(CName, ch+1);
-						}
-						Rcfg.TrgCnt[ch] = 0;
-					}
-					printf("No data...\n");
-                	//if (ret == CAEN_DGTZ_Timeout) printf ("Timeout...\n"); else printf("No data...\n");
-				}
-									
-            	else{
-						printf("No data...\n");
-						//sprintf(CName, "No data...");
-						//fStatusBar->SetText(CName, 0);
-				}
-								
-            Rcfg.Nb = 0;
-            		
-            PrevRateTime = CurrentTime;
-			gSystem->ProcessEvents(); 
-        	}
-			*/
+				
 		// Calculate throughput and trigger rate (every second) 
 		
 			//if (ElapsedTime>=Rcfg.DrawTime*1000 && Rcfg.Nev!=0)	
@@ -757,14 +742,20 @@ void MainFrame::HandleMenu(Int_t id)
                       
 		 	TFile *outfile = new TFile(fi.fFilename,"RECREATE");
 			c1->Write("c1");
-			/*
+			
 			for (int i = 0; i<N_CH; i++){
-				h_ampl[i]->Write(h_ampl[i]->GetTitle());
-				h_integral[i]->Write(h_integral[i]->GetTitle());
+				Histo.ampl[i]->Write(Histo.ampl[i]->GetTitle( ) );
+				Histo.integral[i]->Write(Histo.integral[i]->GetTitle( ) );
+				if (Histo.fCharge)
+					Histo.charge[i]->Write(Histo.charge[i]->GetTitle( ) );
 			}	
-			h_psd_ampl->Write(h_psd_ampl->GetTitle());
-			h_dt->Write(h_dt->GetTitle());
-			*/
+			if (Histo.fIA)
+				Histo.int_ampl->Write(Histo.int_ampl->GetTitle( ) );
+			if (Histo.fPSD_ampl)
+				Histo.psd_ampl->Write(Histo.psd_ampl->GetTitle( ) );
+			if (Histo.fdT)
+				Histo.dt->Write(Histo.dt->GetTitle( ) );
+			
 			outfile->Write(); 
          	printf("File saved - %s \n",fi.fFilename);			 
 		 }

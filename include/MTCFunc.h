@@ -8,6 +8,8 @@
 #include "TH2D.h"
 #include "TGLabel.h"
 #include "TGStatusBar.h"
+#include "TFile.h"
+#include "TTree.h"
 
 #define MAX_CH 16 
 #define b_width 2 //2 ns bin width for 500MS/s V1730S
@@ -66,6 +68,8 @@ typedef struct
 	
 	TGLabel  *TLabel;
 	TGStatusBar *StatusBar;
+	TFile *ff; // to store traces
+	TTree *tree;
 	
 } ReadoutConfig_t;
 

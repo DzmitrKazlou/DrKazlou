@@ -169,7 +169,7 @@ CAEN_DGTZ_ErrorCode  SetLogic(int32_t handle, uint32_t reg_val[2][8], int N_CH) 
 	for (int i=0; i<N_CH; i++){
 		ret = CAEN_DGTZ_ReadRegister(handle, ShapedTriggerWidthAddress[i], &reg_data);
 		printf(" Previously in  0x%08X: %08X \n", ShapedTriggerWidthAddress[i], reg_data);
-		ret = CAEN_DGTZ_WriteRegister(handle, ShapedTriggerWidthAddress[i], 0x14);	 // 0x14 = 20x8ns = 160 ns window
+		ret = CAEN_DGTZ_WriteRegister(handle, ShapedTriggerWidthAddress[i], 0x40);	 // 0x14 = 20x8ns = 160 ns window | 0x40 = 64x8ns = 512 ns window
 		ret = CAEN_DGTZ_ReadRegister(handle, ShapedTriggerWidthAddress[i], &reg_data);
 		printf(" In  0x%04X: %08X \n", ShapedTriggerWidthAddress[i], reg_data);
 	}
@@ -507,7 +507,7 @@ void SetDefaultConfiguration(DigitizerConfig_t *Dcfg) { //CAEN_DGTZ_DPP_PSD_Para
 			/*CFD fraction: 0->25%; 1->50%; 2->75%; 3->100% */
 			Dcfg->cfdf[ch] = 0;
 
-            /* Trigger Validation Acquisition Window */
+            // Trigger Validation Acquisition Window
             Dcfg->tvaw[ch] = 250;
 
             /* Charge sensibility: 
@@ -683,7 +683,7 @@ void InitHisto(Histograms_t *Histo, uint32_t RecordLength[MAX_CH], int N_CH){
 	Histo->trace[0]->GetYaxis( )->SetTitleOffset(1.1);
 	Histo->trace[0]->GetYaxis( )->SetTitle(" Channels, lbs"); 
 	
-	Histo->dt = new TH1D("h_dt", "h_dt", 1000, 0, 1000);
+	Histo->dt = new TH1D("h_dt", "h_dt", 3000, -500, 1000);
 	
 	Histo->counts = new TH1D("h_counts", "h_counts", 16, 0, 16);
 	Histo->layers = new TH1D("h_layers", "h_layers", 16, 0, 16);
@@ -1057,12 +1057,9 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 		
 		if (Rcfg.fPrint)
 			printf(" ---------------------------------------- \n");			
-		
-		
+			
 		gSystem->ProcessEvents(); 
-		
-		
-		
+			
     } // end of readout loop		
 				
 	//return ret;

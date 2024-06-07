@@ -55,11 +55,7 @@ using namespace std;
     CAEN_DGTZ_DPP_PSD_Waveforms_t   *Waveforms=NULL;         // waveforms buffer
 	
 	TCanvas *c1;
-	
-	
-	
-	TFile *ff;		
-	TTree * tree;		
+		
 	Int_t ec_out = 0, ch_out = 0;
 	uint32_t tst_out = 0;
 	
