@@ -998,8 +998,8 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 						uint64_t time_ps0 = ( ( (uint64_t)(Events[0][ev].Extras & 0xFFFF0000)<<16) + Events[0][ev].TimeTag ) * 1000 * 2 + 2 * (Events[0][ev].Extras &~ 0xFFFFFC00); // extra time in picoseconds
 						uint64_t time_ps1 = ( ( (uint64_t)(Events[1][ev].Extras & 0xFFFF0000)<<16) + Events[1][ev].TimeTag ) * 1000 * 2 + 2 * (Events[1][ev].Extras &~ 0xFFFFFC00); // extra time in picoseconds
 						
-						uint32_t timetag0 = 2 * Events[0][ev].TimeTag;
-						uint32_t timetag1 = 2 * Events[1][ev].TimeTag;
+						uint64_t timetag0 = 2 * Events[0][ev].TimeTag;
+						uint64_t timetag1 = 2 * Events[1][ev].TimeTag;
 						uint32_t extra0 = Events[0][ev].Extras & 0xFFFF0000;
 						uint32_t extra1 = Events[1][ev].Extras & 0xFFFF0000;
 						uint32_t fine0 = 2 * (Events[0][ev].Extras &~ 0xFFFFFC00);
