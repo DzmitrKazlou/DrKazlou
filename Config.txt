@@ -14,6 +14,9 @@
 PID 15103
 
 
+# N_CH = number of channels
+N_CH  2
+
 # RECORD_LENGTH = number of samples in the acquisition window
 RECORD_LENGTH  200
 

@@ -569,6 +569,11 @@ void ParseConfigFile(FILE *f_ini, DigitizerConfig_t *Dcfg) // CAEN_DGTZ_DPP_PSD_
 			continue;
 		}
 		
+		// Nch: Digitizer channels to work
+		if (strstr(str, "N_CH")!=NULL) {
+			read = fscanf(f_ini, "%d", &Dcfg->Nch);
+			continue;
+		}
 		
         // Acquisition Record Length (number of samples)
 		if (strstr(str, "RECORD_LENGTH")!=NULL) {
@@ -970,7 +975,7 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 			if (Dcfg.ChannelMask & (1<<ch) ){
 				if (MaxNumEvents<NumEvents[ch])
 					MaxNumEvents = NumEvents[ch];
-				//printf("NumEvents[%i] %i \n",ch, NumEvents[ch]);
+				printf("NumEvents[%i] %i \n",ch, NumEvents[ch]);
 			}    
 		
 		for (uint32_t ev=0; ev<MaxNumEvents; ev++) {
@@ -986,6 +991,8 @@ void ReadoutLoop(int handle, int N_CH, Histograms_t *Histo ){
 					Rcfg.TrgCnt[ch]++;
 					
 					FillHisto(ch, ev, Histo, ampl[ch]); // all data performance
+					if (Rcfg.fPrint)
+						printf(" ch[%i] ev[%i] ampl %f TimeTag %d \n", ch, ev, ampl[ch], Events[ch][ev].TimeTag);
 
 					if (Histo->fdT && ch == 1){
 						uint64_t time_ps0 = ( ( (uint64_t)(Events[0][ev].Extras & 0xFFFF0000)<<16) + Events[0][ev].TimeTag ) * 1000 * 2 + 2 * (Events[0][ev].Extras &~ 0xFFFFFC00); // extra time in picoseconds

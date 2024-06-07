@@ -36,7 +36,7 @@
 
 
 
-int N_CH = 4;
+int N_CH;
 uint32_t log_val[2][8] = {};
 int handle = -1;
 
@@ -157,6 +157,7 @@ int main(int argc, char **argv)
 	ParseConfigFile(f_ini, &Dcfg);
 	fclose(f_ini);
 	
+	N_CH = Dcfg.Nch;
 		
 	printf("Config's abtained successful TraceLength[0] %i  Polarity[0] %i Threshold[0] %i \n", Dcfg.RecordLength[0], Dcfg.PulsePolarity[0], Dcfg.thr[0]);
 	//Configuration file routine

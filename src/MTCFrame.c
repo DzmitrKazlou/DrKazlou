@@ -437,6 +437,11 @@ void MainFrame::InitButton()
 	sprintf(CName, "Connected to CAEN Digitizer Model %s \n ROC FPGA Release is %s\n AMC FPGA Release is %s\n", BoardInfo.ModelName, BoardInfo.ROC_FirmwareRel, BoardInfo.AMC_FirmwareRel);
 	new TGMsgBox(gClient->GetRoot(), fMain, "Info", CName, kMBIconAsterisk, kMBOk);
 	
+	Dcfg.Nch = N_CH;	
+	Dcfg.ChannelMask &= ~0xFFFF;
+	for (int i = 0; i<N_CH; i++)
+		Dcfg.ChannelMask |= (1<<i);
+	//printf("Nch %i ChannelMask %08X \n", Dcfg.Nch, Dcfg.ChannelMask);
 	
 	ret = ProgramDigitizer(handle, Dcfg);
     if (ret) {
