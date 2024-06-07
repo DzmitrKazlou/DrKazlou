@@ -490,7 +490,7 @@ void MainFrame::InitButton()
 	//Events per Aggregate
 	ret = CAEN_DGTZ_ReadRegister(handle, 0x8034, &reg_data);
 	printf(" Previously in  0x%04X: %08X \n", 0x8034, reg_data); 
-	ret = CAEN_DGTZ_WriteRegister(handle, 0x8034, 0x1); // 0x3FF - 1024 - dec (highest value)
+	ret = CAEN_DGTZ_WriteRegister(handle, 0x8034, 0x10); // 0x3FF - 1024 - dec (highest value)  0x10 - for kinetic meaurements
 	ret = CAEN_DGTZ_ReadRegister(handle, 0x8034, &reg_data);
 	printf(" Now in  0x%04X: %08X \n", 0x8034, reg_data);
 	
