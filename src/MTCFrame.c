@@ -497,6 +497,11 @@ void MainFrame::InitButton()
 	
 	ret = CAEN_DGTZ_ReadRegister(handle, 0x8000, &reg_data);
 	printf(" Previously in  0x%04X: %08X \n", 0x8000, reg_data); 
+	
+	ret = CAEN_DGTZ_ReadRegister(handle, 0x1074, &reg_data);
+	printf(" Previously TrHold-Off  0x%04X: %08X \n", 0x1074, reg_data); 
+	ret = CAEN_DGTZ_ReadRegister(handle, 0x1174, &reg_data);
+	printf(" Previously TrHold-Off  0x%04X: %08X \n", 0x1174, reg_data); 
 
 	uint32_t ExtraConfigAddress[MAX_CH] = { 0x1084, 0x1184, 0x1284, 0x1384, 0x1484, 0x1584, 0x1684, 0x1784,
 										   0x1884, 0x1984, 0x1A84, 0x1B84, 0x1C84, 0x1D84, 0x1E84, 0x1F84};
@@ -509,7 +514,7 @@ void MainFrame::InitButton()
 	  printf(" Now [ExtraConfig] 0x%04X: %08X \n", ExtraConfigAddress[ch], reg_data);
 	}
 	
-	
+		
 	
 }
 

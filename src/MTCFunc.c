@@ -521,7 +521,7 @@ void SetDefaultConfiguration(DigitizerConfig_t *Dcfg) { //CAEN_DGTZ_DPP_PSD_Para
         Dcfg->purh = CAEN_DGTZ_DPP_PSD_PUR_DetectOnly;
         Dcfg->purgap = 100;  // Purity Gap in LSB units (1LSB = 0.12 mV for 2Vpp Input Range, 1LSB = 0.03 mV for 0.5 Vpp Input Range )
         Dcfg->blthr = 3;     // Baseline Threshold
-        Dcfg->trgho = 8;     //8   // Trigger HoldOff
+        Dcfg->trgho = 1250;     //in 8  ns steps   128 = 1024 ns // Trigger HoldOff 
     
 	
 }
